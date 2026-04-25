@@ -10,6 +10,10 @@ import SoilHealthPage from "./pages/SoilHealthPage";
 import SoilHealthReportPage from "./pages/SoilHealthReportPage";
 import CropPage from "./pages/CropPage";
 import MarketPage from "./pages/MarketPage";
+<<<<<<< HEAD
+import SystemStatusPage from "./pages/SystemStatusPage";
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 
 import SystemStatusPage from "./pages/SystemStatusPage";
 
@@ -59,9 +63,16 @@ export const router = createBrowserRouter([
     path: "/market",
     Component: MarketPage,
   },
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+>>>>>>> 8eeeebb1361ac6d644ebd538d7dadc5c89f6763e
   {
     path: "/system-status",
     Component: SystemStatusPage,
   },
 ]);
+=======
+]);
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
