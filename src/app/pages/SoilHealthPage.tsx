@@ -227,4 +227,8 @@ export default function SoilHealthPage() {
       </div>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd

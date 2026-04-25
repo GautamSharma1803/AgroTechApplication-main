@@ -9,6 +9,7 @@ import {
   Filter, 
   ShoppingCart, 
   TrendingUp,
+<<<<<<< HEAD
   TrendingDown,
   MapPin,
   Star,
@@ -16,6 +17,10 @@ import {
   X,
   Camera,
   Loader2
+=======
+  MapPin,
+  Star
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { market } from '../utils/api';
@@ -28,6 +33,7 @@ export default function MarketPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [myListings, setMyListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
   const [showListingModal, setShowListingModal] = useState(false);
   const [listingImage, setListingImage] = useState<string | null>(null);
   const [newListing, setNewListing] = useState({
@@ -66,6 +72,8 @@ export default function MarketPage() {
 
     return () => clearInterval(interval);
   }, []);
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 
   useEffect(() => {
     loadMarketData();
@@ -157,11 +165,21 @@ export default function MarketPage() {
 
   const displayProducts = products.length > 0 ? products : mockProducts;
 
+<<<<<<< HEAD
+=======
+  const priceAlerts = [
+    { product: 'Tomatoes', change: '+5%', trend: 'up' },
+    { product: 'Wheat', change: '-2%', trend: 'down' },
+    { product: 'Corn', change: '+3%', trend: 'up' }
+  ];
+
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
   const handleSearch = () => {
     loadMarketData();
   };
 
   const handleBuyProduct = (product: any) => {
+<<<<<<< HEAD
     toast.success(
       `${product.name} added to cart! $${product.price}/${product.unit} from ${product.seller}`,
       {
@@ -192,6 +210,15 @@ export default function MarketPage() {
     // For now, just close the modal
     setShowListingModal(false);
     toast.success('Listing created successfully!');
+=======
+    toast.success(`Added ${product.name} to cart!`);
+    // In a real app, this would add to cart and navigate to checkout
+  };
+
+  const handleCreateListing = () => {
+    toast.info('Create listing feature coming soon!');
+    // In a real app, this would open a form modal to create a new product listing
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
   };
 
   return (
@@ -256,6 +283,7 @@ export default function MarketPage() {
             {/* Price Alerts */}
             <Card className="rounded-2xl p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
+<<<<<<< HEAD
                 <h3 className="font-semibold text-gray-900">📊 Live Market Prices</h3>
                 <div className="flex items-center gap-1 text-xs text-green-600">
                   <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
@@ -293,6 +321,28 @@ export default function MarketPage() {
               <p className="text-xs text-gray-500 mt-3 text-center">
                 Prices update every 5 seconds
               </p>
+=======
+                <h3 className="font-semibold text-gray-900">Price Alerts</h3>
+                <TrendingUp className="text-gray-400" size={20} />
+              </div>
+              <div className="space-y-2">
+                {priceAlerts.map((alert, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-2"
+                  >
+                    <span className="text-sm text-gray-700">{alert.product}</span>
+                    <span
+                      className={`text-sm font-semibold ${
+                        alert.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
+                      {alert.change}
+                    </span>
+                  </div>
+                ))}
+              </div>
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
             </Card>
 
             {/* Products Grid */}
@@ -310,7 +360,11 @@ export default function MarketPage() {
                 {displayProducts.map((product) => (
                   <Card
                     key={product.id}
+<<<<<<< HEAD
                     className="rounded-2xl overflow-hidden hover:shadow-lg transition-shadow"
+=======
+                    className="rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
                   >
                     <div className="relative h-32">
                       <ImageWithFallback
@@ -344,10 +398,14 @@ export default function MarketPage() {
                         </div>
                         <Button
                           size="sm"
+<<<<<<< HEAD
                           onClick={(e) => {
                             e.stopPropagation();
                             handleBuyProduct(product);
                           }}
+=======
+                          onClick={() => handleBuyProduct(product)}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
                           className="h-8 px-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs"
                         >
                           Buy
@@ -373,10 +431,14 @@ export default function MarketPage() {
                 Reach thousands of buyers and get the best prices for your produce
               </p>
               <Button
+<<<<<<< HEAD
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCreateListing();
                 }}
+=======
+                onClick={handleCreateListing}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
                 className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl"
               >
                 Create Listing
@@ -416,6 +478,7 @@ export default function MarketPage() {
           </div>
         )}
       </div>
+<<<<<<< HEAD
 
       {/* Listing Modal */}
       {showListingModal && (
@@ -505,3 +568,8 @@ export default function MarketPage() {
     </div>
   );
 }
+=======
+    </div>
+  );
+}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd

@@ -3,9 +3,15 @@ import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
+<<<<<<< HEAD
 import { ArrowLeft, Plus, Calendar, Droplets, TrendingUp, AlertCircle, X, Upload, Camera, Loader2 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { crops as cropsApi, cropDetection } from '../utils/api';
+=======
+import { ArrowLeft, Plus, Calendar, Droplets, TrendingUp, AlertCircle, X } from 'lucide-react';
+import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { crops as cropsApi } from '../utils/api';
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 import { toast } from 'sonner';
 
 export default function CropPage() {
@@ -23,8 +29,11 @@ export default function CropPage() {
     image: '',
     tasks: [] as string[]
   });
+<<<<<<< HEAD
   const [detecting, setDetecting] = useState(false);
   const [cropImagePreview, setCropImagePreview] = useState<string | null>(null);
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 
   useEffect(() => {
     loadCrops();
@@ -60,7 +69,20 @@ export default function CropPage() {
       const crop = await cropsApi.create(newCrop);
       setCrops([...crops, crop]);
       toast.success('Crop added successfully!');
+<<<<<<< HEAD
       resetCropForm();
+=======
+      setShowAddModal(false);
+      setNewCrop({
+        name: '',
+        variety: '',
+        planted: '',
+        harvest: '',
+        health: 'good',
+        image: '',
+        tasks: []
+      });
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
     } catch (error: any) {
       console.error('Failed to add crop:', error);
       toast.error('Backend not connected. Deploy Edge Function to add crops.');
@@ -68,6 +90,7 @@ export default function CropPage() {
       const demoCrop = {
         id: Date.now(),
         ...newCrop,
+<<<<<<< HEAD
         image: cropImagePreview || newCrop.image || 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400'
       };
       setCrops([...crops, demoCrop]);
@@ -189,6 +212,25 @@ export default function CropPage() {
     });
   }
 
+=======
+        image: newCrop.image || 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400'
+      };
+      setCrops([...crops, demoCrop]);
+      toast.info('Added as demo crop (not saved to database)');
+      setShowAddModal(false);
+      setNewCrop({
+        name: '',
+        variety: '',
+        planted: '',
+        harvest: '',
+        health: 'good',
+        image: '',
+        tasks: []
+      });
+    }
+  }
+
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
   const mockCrops = [
     {
       id: 1,
@@ -476,6 +518,7 @@ export default function CropPage() {
                 </select>
               </div>
               <div>
+<<<<<<< HEAD
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   📸 Upload Crop Photo (AI Auto-Detection)
                 </label>
@@ -532,6 +575,8 @@ export default function CropPage() {
                 </div>
               </div>
               <div>
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Image URL (optional)
                 </label>
@@ -545,14 +590,24 @@ export default function CropPage() {
             </div>
             <Button
               onClick={handleAddCrop}
+<<<<<<< HEAD
               disabled={detecting}
               className="w-full mt-6 h-11 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {detecting ? 'AI Detecting...' : 'Add Crop'}
+=======
+              className="w-full mt-6 h-11 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-semibold"
+            >
+              Add Crop
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
             </Button>
           </div>
         </div>
       )}
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd

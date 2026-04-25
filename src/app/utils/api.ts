@@ -113,6 +113,7 @@ export const crops = {
 // ============= DIAGNOSIS API =============
 
 export const diagnosis = {
+<<<<<<< HEAD
   // Validate if image contains a plant
   validatePlant: async (image: string) => {
     try {
@@ -128,6 +129,8 @@ export const diagnosis = {
     }
   },
 
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
   analyze: async (image: string, cropType?: string) => {
     const data = await apiCall('/diagnose', {
       method: 'POST',
@@ -142,6 +145,7 @@ export const diagnosis = {
   },
 };
 
+<<<<<<< HEAD
 // ============= CROP DETECTION API =============
 
 export const cropDetection = {
@@ -160,6 +164,8 @@ export const cropDetection = {
   },
 };
 
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 // ============= SOIL TESTS API =============
 
 export const soilTests = {
@@ -220,4 +226,8 @@ export const upload = {
     });
     return data.url;
   },
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
