@@ -71,26 +71,9 @@ export default function DiagnosePage() {
       const result = await diagnosisApi.analyze(imageToAnalyze);
 
       toast.success('Analysis complete!');
-
-  const handleAnalyze = async () => {
-    if (!selectedImage) return;
-    
-    setAnalyzing(true);
-    try {
-      // Upload image first
-      toast.info('Uploading image...');
-      const imageUrl = await uploadApi.image(selectedImage, 'diagnosis');
-      
-      // Analyze the image
-      toast.info('Analyzing plant...');
-      const result = await diagnosisApi.analyze(selectedImage);
-      
-
-      // Navigate to report with the diagnosis data
       navigate('/diagnose/report', { state: { diagnosis: result } });
     } catch (error: any) {
       console.error('Diagnosis error:', error);
-
 
       // Create mock diagnosis result for demo
       const mockDiagnosis = {
@@ -122,9 +105,6 @@ export default function DiagnosePage() {
       toast.info('Backend not connected. Showing demo AI analysis.');
       navigate('/diagnose/report', { state: { diagnosis: mockDiagnosis } });
     } finally {
-
-      toast.error(error.message || 'Failed to analyze plant');
-
       setAnalyzing(false);
     }
   };
@@ -236,7 +216,6 @@ export default function DiagnosePage() {
               className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl"
             >
               {analyzing ? 'AI Analyzing...' : 'Re-analyze Plant'}
-=======
               onClick={handleAnalyze}
               disabled={analyzing}
               className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl"
@@ -290,8 +269,5 @@ export default function DiagnosePage() {
       </div>
     </div>
   );
-
 }
-
-}
-
+    }}}
