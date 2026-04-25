@@ -10,13 +10,7 @@ import SoilHealthPage from "./pages/SoilHealthPage";
 import SoilHealthReportPage from "./pages/SoilHealthReportPage";
 import CropPage from "./pages/CropPage";
 import MarketPage from "./pages/MarketPage";
-
 import SystemStatusPage from "./pages/SystemStatusPage";
-
-
-
-import SystemStatusPage from "./pages/SystemStatusPage";
-
 
 export const router = createBrowserRouter([
   {
@@ -63,15 +57,8 @@ export const router = createBrowserRouter([
     path: "/market",
     Component: MarketPage,
   },
-
-
-
-
   {
     path: "/system-status",
     Component: SystemStatusPage,
   },
 ]);
-
-
-

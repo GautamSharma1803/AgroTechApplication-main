@@ -13,11 +13,8 @@ import {
   User,
   Search,
   Calendar,
-
   AlertCircle,
   Info
-
-
 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useAuth } from '../contexts/AuthContext';
@@ -154,7 +151,6 @@ export default function HomeScreen() {
                 <p className="text-sm text-gray-700 flex-1">{alert.message}</p>
               </div>
             ))}
-
             {/* System Status Link */}
             <button
               onClick={() => navigate('/system-status')}

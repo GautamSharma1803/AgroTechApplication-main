@@ -2,11 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-
 import { ArrowLeft, Camera, Upload, Image as ImageIcon, X, AlertTriangle } from 'lucide-react';
-
-import { ArrowLeft, Camera, Upload, Image as ImageIcon, X } from 'lucide-react';
-
 import { diagnosis as diagnosisApi, upload as uploadApi } from '../utils/api';
 import { toast } from 'sonner';
 
@@ -14,7 +10,6 @@ export default function DiagnosePage() {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,19 +20,10 @@ export default function DiagnosePage() {
         setSelectedImage(imageData);
         // Automatically start analysis when image is uploaded
         await handleAnalyze(imageData);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
-
       };
       reader.readAsDataURL(file);
     }
   };
-
 
   const handleAnalyze = async (imageData?: string) => {
     const imageToAnalyze = imageData || selectedImage;
@@ -71,6 +57,7 @@ export default function DiagnosePage() {
       const result = await diagnosisApi.analyze(imageToAnalyze);
 
       toast.success('Analysis complete!');
+      // Navigate to report with the diagnosis data
       navigate('/diagnose/report', { state: { diagnosis: result } });
     } catch (error: any) {
       console.error('Diagnosis error:', error);
@@ -109,7 +96,6 @@ export default function DiagnosePage() {
     }
   };
 
-
   // Mock plant validation function (simulates AI detection)
   const mockPlantValidation = async (imageData: string): Promise<boolean> => {
     // This is a simulation. In production, this would call real AI API
@@ -130,7 +116,6 @@ export default function DiagnosePage() {
       }, 500);
     });
   };
-
 
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto">
@@ -210,18 +195,11 @@ export default function DiagnosePage() {
               </button>
             </div>
             <Button
-
               onClick={() => handleAnalyze()}
               disabled={analyzing}
               className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl"
             >
               {analyzing ? 'AI Analyzing...' : 'Re-analyze Plant'}
-              onClick={handleAnalyze}
-              disabled={analyzing}
-              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl"
-            
-              {analyzing ? 'Analyzing...' : 'Analyze Plant'}
-
             </Button>
           </Card>
         )}
@@ -270,4 +248,3 @@ export default function DiagnosePage() {
     </div>
   );
 }
-    }}}

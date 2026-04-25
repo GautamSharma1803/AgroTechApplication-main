@@ -3,15 +3,9 @@ import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
-
 import { ArrowLeft, Plus, Calendar, Droplets, TrendingUp, AlertCircle, X, Upload, Camera, Loader2 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { crops as cropsApi, cropDetection } from '../utils/api';
-
-import { ArrowLeft, Plus, Calendar, Droplets, TrendingUp, AlertCircle, X } from 'lucide-react';
-import { ImageWithFallback } from '../components/figma/ImageWithFallback';
-import { crops as cropsApi } from '../utils/api';
-
 import { toast } from 'sonner';
 
 export default function CropPage() {
@@ -29,10 +23,41 @@ export default function CropPage() {
     image: '',
     tasks: [] as string[]
   });
-
   const [detecting, setDetecting] = useState(false);
   const [cropImagePreview, setCropImagePreview] = useState<string | null>(null);
 
+  const mockCrops = [
+    {
+      id: 1,
+      name: 'Tomatoes',
+      variety: 'Cherry',
+      planted: '15 days ago',
+      harvest: '45 days',
+      health: 'excellent',
+      image: 'https://images.unsplash.com/photo-1748432171507-c1d62fe2e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBwbGFudCUyMGdyb3dpbmd8ZW58MXx8fHwxNzc0ODQ5OTE1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      tasks: ['Water today', 'Check for pests']
+    },
+    {
+      id: 2,
+      name: 'Wheat',
+      variety: 'Winter Wheat',
+      planted: '30 days ago',
+      harvest: '90 days',
+      health: 'good',
+      image: 'https://images.unsplash.com/photo-1627842822558-c1f15aef9838?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aGVhdCUyMGZpZWxkJTIwZ29sZGVuJTIwaGFydmVzdHxlbnwxfHx8fDE3NzQ5NDMyMTV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      tasks: ['Apply fertilizer']
+    },
+    {
+      id: 3,
+      name: 'Corn',
+      variety: 'Sweet Corn',
+      planted: '20 days ago',
+      harvest: '70 days',
+      health: 'warning',
+      image: 'https://images.unsplash.com/photo-1769258958976-8852440011b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZ3JpY3VsdHVyYWwlMjBjcm9wcyUyMHZlZ2V0YWJsZXN8ZW58MXx8fHwxNzc0OTQzMjE0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      tasks: ['Disease detected', 'Increase watering']
+    }
+  ];
 
   useEffect(() => {
     loadCrops();
@@ -44,14 +69,12 @@ export default function CropPage() {
       if (data && data.length > 0) {
         setCrops(data);
       } else {
-        // Use mock data as fallback if no crops found
         toast.info('No crops found. Showing demo data.');
         setCrops(mockCrops);
       }
     } catch (error: any) {
       console.error('Failed to load crops:', error);
       toast.error('Using demo crops. Deploy backend for real data.');
-      // Use mock data as fallback
       setCrops(mockCrops);
     } finally {
       setLoading(false);
@@ -68,28 +91,13 @@ export default function CropPage() {
       const crop = await cropsApi.create(newCrop);
       setCrops([...crops, crop]);
       toast.success('Crop added successfully!');
-
       resetCropForm();
-
-      setShowAddModal(false);
-      setNewCrop({
-        name: '',
-        variety: '',
-        planted: '',
-        harvest: '',
-        health: 'good',
-        image: '',
-        tasks: []
-      });
-
     } catch (error: any) {
       console.error('Failed to add crop:', error);
       toast.error('Backend not connected. Deploy Edge Function to add crops.');
-      // Optionally add to local state as demo
       const demoCrop = {
         id: Date.now(),
         ...newCrop,
-
         image: cropImagePreview || newCrop.image || 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400'
       };
       setCrops([...crops, demoCrop]);
@@ -112,7 +120,6 @@ export default function CropPage() {
     setCropImagePreview(null);
   }
 
-  // AI Crop Detection from Image
   async function handleCropImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -122,15 +129,12 @@ export default function CropPage() {
       const imageData = reader.result as string;
       setCropImagePreview(imageData);
       
-      // Auto-detect crop details using AI
       setDetecting(true);
       toast.info('🤖 AI is analyzing your crop image...');
 
       try {
-        // Try to call backend AI detection
         const cropInfo = await cropDetection.detectCrop(imageData);
         
-        // Update form with AI-detected information
         setNewCrop({
           ...newCrop,
           variety: cropInfo.variety || newCrop.variety,
@@ -143,7 +147,6 @@ export default function CropPage() {
 
         toast.success(`✅ Detected: ${cropInfo.cropType}! Please confirm the name.`);
       } catch (error) {
-        // Fallback to mock AI detection for demo
         const mockDetection = await mockCropDetection(imageData);
         
         setNewCrop({
@@ -164,11 +167,9 @@ export default function CropPage() {
     reader.readAsDataURL(file);
   }
 
-  // Mock AI crop detection (simulates real AI analysis)
   async function mockCropDetection(imageData: string) {
     return new Promise<any>((resolve) => {
       setTimeout(() => {
-        // Simulate AI detection - in production this would use real computer vision
         const cropTypes = [
           {
             cropType: 'Tomato',
@@ -204,63 +205,11 @@ export default function CropPage() {
           }
         ];
 
-        // Random selection for demo
         const detected = cropTypes[Math.floor(Math.random() * cropTypes.length)];
         resolve(detected);
       }, 1500);
     });
   }
-
-
-        image: newCrop.image || 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400'
-      };
-      setCrops([...crops, demoCrop]);
-      toast.info('Added as demo crop (not saved to database)');
-      setShowAddModal(false);
-      setNewCrop({
-        name: '',
-        variety: '',
-        planted: '',
-        harvest: '',
-        health: 'good',
-        image: '',
-        tasks: []
-      });
-
-
-
-  const mockCrops = [
-    {
-      id: 1,
-      name: 'Tomatoes',
-      variety: 'Cherry',
-      planted: '15 days ago',
-      harvest: '45 days',
-      health: 'excellent',
-      image: 'https://images.unsplash.com/photo-1748432171507-c1d62fe2e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBwbGFudCUyMGdyb3dpbmd8ZW58MXx8fHwxNzc0ODQ5OTE1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      tasks: ['Water today', 'Check for pests']
-    },
-    {
-      id: 2,
-      name: 'Wheat',
-      variety: 'Winter Wheat',
-      planted: '30 days ago',
-      harvest: '90 days',
-      health: 'good',
-      image: 'https://images.unsplash.com/photo-1627842822558-c1f15aef9838?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aGVhdCUyMGZpZWxkJTIwZ29sZGVuJTIwaGFydmVzdHxlbnwxfHx8fDE3NzQ5NDMyMTV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      tasks: ['Apply fertilizer']
-    },
-    {
-      id: 3,
-      name: 'Corn',
-      variety: 'Sweet Corn',
-      planted: '20 days ago',
-      harvest: '70 days',
-      health: 'warning',
-      image: 'https://images.unsplash.com/photo-1769258958976-8852440011b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZ3JpY3VsdHVyYWwlMjBjcm9wcyUyMHZlZ2V0YWJsZXN8ZW58MXx8fHwxNzc0OTQzMjE0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      tasks: ['Disease detected', 'Increase watering']
-    }
-  ];
 
   const displayCrops = crops.length > 0 ? crops : mockCrops;
 
@@ -280,7 +229,6 @@ export default function CropPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto pb-20">
-      {/* Header */}
       <div className="bg-emerald-600 p-6 rounded-b-[2rem]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -297,7 +245,6 @@ export default function CropPage() {
           </button>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-white/20 rounded-xl p-3 text-center">
             <p className="text-2xl font-bold text-white">{stats.totalCrops}</p>
@@ -315,7 +262,6 @@ export default function CropPage() {
       </div>
 
       <div className="p-6">
-        {/* Filters */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {['all', 'excellent', 'good', 'warning'].map((status) => (
             <button
@@ -332,7 +278,6 @@ export default function CropPage() {
           ))}
         </div>
 
-        {/* Crop Cards */}
         <div className="space-y-4">
           {displayCrops
             .filter((crop) => filter === 'all' || crop.health === filter)
@@ -395,7 +340,7 @@ export default function CropPage() {
                       <p className="text-xs font-semibold text-gray-700">
                         Today's Tasks:
                       </p>
-                      {crop.tasks.map((task, idx) => (
+                      {crop.tasks.map((task: string, idx: number) => (
                         <div
                           key={idx}
                           className="flex items-center gap-2 text-sm"
@@ -429,7 +374,6 @@ export default function CropPage() {
             ))}
         </div>
 
-        {/* Add Crop Card */}
         <Card 
           onClick={() => setShowAddModal(true)}
           className="rounded-2xl p-8 mt-4 border-2 border-dashed border-gray-300 cursor-pointer hover:border-emerald-600 hover:bg-emerald-50/50 transition-colors"
@@ -446,7 +390,6 @@ export default function CropPage() {
         </Card>
       </div>
 
-      {/* Add Crop Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -516,7 +459,6 @@ export default function CropPage() {
                 </select>
               </div>
               <div>
-
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   📸 Upload Crop Photo (AI Auto-Detection)
                 </label>
@@ -573,7 +515,6 @@ export default function CropPage() {
                 </div>
               </div>
               <div>
-
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Image URL (optional)
                 </label>
@@ -587,25 +528,14 @@ export default function CropPage() {
             </div>
             <Button
               onClick={handleAddCrop}
-
               disabled={detecting}
               className="w-full mt-6 h-11 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {detecting ? 'AI Detecting...' : 'Add Crop'}
-
-              className="w-full mt-6 h-11 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-semibold"
-            
-              Add Crop
-
-
-              className="w-full mt-6 h-11 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-semibold"
-            
-              Add Crop
-
             </Button>
           </div>
         </div>
       )}
     </div>
   );
-
+}
