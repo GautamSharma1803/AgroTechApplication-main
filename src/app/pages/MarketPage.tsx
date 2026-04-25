@@ -33,20 +33,29 @@ export default function MarketPage() {
     try {
       if (activeTab === 'buy') {
         const data = await market.getProducts(searchQuery);
-        if (data.length === 0) {
+        if (data && data.length > 0) {
+          setProducts(data);
+        } else {
           // Use mock data if no products found
           setProducts(mockProducts);
-        } else {
-          setProducts(data);
         }
       } else {
         const data = await market.getMyListings();
-        setMyListings(data);
+        if (data && data.length > 0) {
+          setMyListings(data);
+        } else {
+          setMyListings([]);
+        }
       }
     } catch (error: any) {
       console.error('Failed to load market data:', error);
-      toast.error('Failed to load products');
-      setProducts(mockProducts);
+      if (activeTab === 'buy') {
+        toast.error('Using demo products. Deploy backend for real data.');
+        setProducts(mockProducts);
+      } else {
+        toast.error('Backend not connected. Deploy Edge Function to create listings.');
+        setMyListings([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -113,6 +122,16 @@ export default function MarketPage() {
 
   const handleSearch = () => {
     loadMarketData();
+  };
+
+  const handleBuyProduct = (product: any) => {
+    toast.success(`Added ${product.name} to cart!`);
+    // In a real app, this would add to cart and navigate to checkout
+  };
+
+  const handleCreateListing = () => {
+    toast.info('Create listing feature coming soon!');
+    // In a real app, this would open a form modal to create a new product listing
   };
 
   return (
@@ -248,6 +267,7 @@ export default function MarketPage() {
                         </div>
                         <Button
                           size="sm"
+                          onClick={() => handleBuyProduct(product)}
                           className="h-8 px-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs"
                         >
                           Buy
@@ -272,7 +292,10 @@ export default function MarketPage() {
               <p className="text-gray-600 mb-4">
                 Reach thousands of buyers and get the best prices for your produce
               </p>
-              <Button className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl">
+              <Button
+                onClick={handleCreateListing}
+                className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl"
+              >
                 Create Listing
               </Button>
             </Card>
