@@ -226,8 +226,7 @@ export default function CropPage() {
         image: '',
         tasks: []
       });
-    }
-  }
+
 
 
   const mockCrops = [
@@ -595,12 +594,12 @@ export default function CropPage() {
               {detecting ? 'AI Detecting...' : 'Add Crop'}
 
               className="w-full mt-6 h-11 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-semibold"
-            >
+            
               Add Crop
 
 
               className="w-full mt-6 h-11 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-semibold"
-            >
+            
               Add Crop
 
             </Button>
