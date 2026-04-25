@@ -75,36 +75,33 @@ export default function DiagnosePage() {
               </div>
 
               <div className="space-y-3">
+                <input
+                  id="camera-input"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
                 <label htmlFor="camera-input">
-                  <Button className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl">
+                  <div className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors font-medium">
                     <Camera className="mr-2" size={20} />
                     Take Photo
-                  </Button>
-                  <input
-                    id="camera-input"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
+                  </div>
                 </label>
 
+                <input
+                  id="file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
                 <label htmlFor="file-input">
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 border-2 border-green-600 text-green-600 hover:bg-green-50 rounded-xl"
-                  >
+                  <div className="w-full h-12 border-2 border-green-600 text-green-600 hover:bg-green-50 rounded-xl flex items-center justify-center cursor-pointer transition-colors font-medium">
                     <Upload className="mr-2" size={20} />
                     Upload from Gallery
-                  </Button>
-                  <input
-                    id="file-input"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
+                  </div>
                 </label>
               </div>
             </div>
