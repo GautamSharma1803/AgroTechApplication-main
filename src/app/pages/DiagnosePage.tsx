@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-<<<<<<< HEAD
+
 import { ArrowLeft, Camera, Upload, Image as ImageIcon, X, AlertTriangle } from 'lucide-react';
-=======
+
 import { ArrowLeft, Camera, Upload, Image as ImageIcon, X } from 'lucide-react';
->>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
+
 import { diagnosis as diagnosisApi, upload as uploadApi } from '../utils/api';
 import { toast } from 'sonner';
 
@@ -15,7 +15,7 @@ export default function DiagnosePage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
 
-<<<<<<< HEAD
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -25,20 +25,20 @@ export default function DiagnosePage() {
         setSelectedImage(imageData);
         // Automatically start analysis when image is uploaded
         await handleAnalyze(imageData);
-=======
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
->>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
+
       };
       reader.readAsDataURL(file);
     }
   };
 
-<<<<<<< HEAD
+
   const handleAnalyze = async (imageData?: string) => {
     const imageToAnalyze = imageData || selectedImage;
     if (!imageToAnalyze) return;
@@ -71,7 +71,7 @@ export default function DiagnosePage() {
       const result = await diagnosisApi.analyze(imageToAnalyze);
 
       toast.success('Analysis complete!');
-=======
+
   const handleAnalyze = async () => {
     if (!selectedImage) return;
     
@@ -85,12 +85,12 @@ export default function DiagnosePage() {
       toast.info('Analyzing plant...');
       const result = await diagnosisApi.analyze(selectedImage);
       
->>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
+
       // Navigate to report with the diagnosis data
       navigate('/diagnose/report', { state: { diagnosis: result } });
     } catch (error: any) {
       console.error('Diagnosis error:', error);
-<<<<<<< HEAD
+
 
       // Create mock diagnosis result for demo
       const mockDiagnosis = {
@@ -122,14 +122,14 @@ export default function DiagnosePage() {
       toast.info('Backend not connected. Showing demo AI analysis.');
       navigate('/diagnose/report', { state: { diagnosis: mockDiagnosis } });
     } finally {
-=======
+
       toast.error(error.message || 'Failed to analyze plant');
->>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
+
       setAnalyzing(false);
     }
   };
 
-<<<<<<< HEAD
+
   // Mock plant validation function (simulates AI detection)
   const mockPlantValidation = async (imageData: string): Promise<boolean> => {
     // This is a simulation. In production, this would call real AI API
@@ -151,8 +151,7 @@ export default function DiagnosePage() {
     });
   };
 
-=======
->>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
+
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto">
       {/* Header */}
@@ -231,7 +230,7 @@ export default function DiagnosePage() {
               </button>
             </div>
             <Button
-<<<<<<< HEAD
+
               onClick={() => handleAnalyze()}
               disabled={analyzing}
               className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl"
@@ -241,9 +240,9 @@ export default function DiagnosePage() {
               onClick={handleAnalyze}
               disabled={analyzing}
               className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl"
-            >
+            
               {analyzing ? 'Analyzing...' : 'Analyze Plant'}
->>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
+
             </Button>
           </Card>
         )}
@@ -291,8 +290,8 @@ export default function DiagnosePage() {
       </div>
     </div>
   );
-<<<<<<< HEAD
+
 }
-=======
+
 }
->>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
+
