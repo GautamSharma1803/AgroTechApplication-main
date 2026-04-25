@@ -17,7 +17,6 @@ import {
   AlertCircle,
   Info
 
-  AlertCircle
 
 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
