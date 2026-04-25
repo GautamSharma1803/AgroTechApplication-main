@@ -18,8 +18,7 @@ import {
   Camera,
   Loader2
 
-  MapPin,
-  Star
+
 
 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
@@ -568,6 +567,4 @@ export default function MarketPage() {
 }
 
     </div>
-  );
-}
 
