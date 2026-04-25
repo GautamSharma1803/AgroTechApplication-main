@@ -281,7 +281,7 @@ export default function MarketPage() {
                           <TrendingDown className="text-red-600" size={12} />
                         )}
                         <span
-                          className={`text-xs font-semibold ${\n                            item.trend === 'up' ? 'text-green-600' : 'text-red-600'\n                          }`}
+                          className={`text-xs font-semibold ${                            item.trend === 'up' ? 'text-green-600' : 'text-red-600'                          }`}
                         >
                           {item.change > 0 ? '+' : ''}{item.change}%
                         </span>
