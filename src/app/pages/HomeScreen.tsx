@@ -13,7 +13,12 @@ import {
   User,
   Search,
   Calendar,
+<<<<<<< HEAD
+  AlertCircle,
+  Info
+=======
   AlertCircle
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useAuth } from '../contexts/AuthContext';
@@ -150,6 +155,17 @@ export default function HomeScreen() {
                 <p className="text-sm text-gray-700 flex-1">{alert.message}</p>
               </div>
             ))}
+<<<<<<< HEAD
+            {/* System Status Link */}
+            <button
+              onClick={() => navigate('/system-status')}
+              className="w-full p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors flex items-center gap-3 text-gray-700"
+            >
+              <Info size={18} />
+              <span className="text-sm font-medium">Check Backend Status</span>
+            </button>
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
           </div>
         )}
 

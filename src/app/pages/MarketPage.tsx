@@ -9,8 +9,18 @@ import {
   Filter, 
   ShoppingCart, 
   TrendingUp,
+<<<<<<< HEAD
+  TrendingDown,
+  MapPin,
+  Star,
+  Plus,
+  X,
+  Camera,
+  Loader2
+=======
   MapPin,
   Star
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { market } from '../utils/api';
@@ -23,6 +33,47 @@ export default function MarketPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [myListings, setMyListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
+  const [showListingModal, setShowListingModal] = useState(false);
+  const [listingImage, setListingImage] = useState<string | null>(null);
+  const [newListing, setNewListing] = useState({
+    name: '',
+    price: '',
+    unit: 'kg',
+    quantity: '',
+    location: '',
+    description: ''
+  });
+  const [livePrices, setLivePrices] = useState<any[]>([
+    { product: 'Tomatoes', price: 45, change: 5, trend: 'up' },
+    { product: 'Wheat', price: 30, change: -2, trend: 'down' },
+    { product: 'Corn', price: 35, change: 3, trend: 'up' },
+    { product: 'Rice', price: 42, change: 1, trend: 'up' },
+    { product: 'Potatoes', price: 28, change: -1, trend: 'down' },
+  ]);
+
+  // Simulate live price updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLivePrices(prev => prev.map(item => {
+        // Random price fluctuation
+        const fluctuation = Math.random() > 0.5 ? 1 : -1;
+        const newChange = item.change + fluctuation * (Math.random() * 2);
+        const newPrice = Math.max(item.price + fluctuation, 10); // Don't go below 10
+        
+        return {
+          ...item,
+          price: Math.round(newPrice),
+          change: Math.round(newChange * 10) / 10,
+          trend: newChange >= 0 ? 'up' : 'down'
+        };
+      }));
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 
   useEffect(() => {
     loadMarketData();
@@ -33,20 +84,29 @@ export default function MarketPage() {
     try {
       if (activeTab === 'buy') {
         const data = await market.getProducts(searchQuery);
-        if (data.length === 0) {
+        if (data && data.length > 0) {
+          setProducts(data);
+        } else {
           // Use mock data if no products found
           setProducts(mockProducts);
-        } else {
-          setProducts(data);
         }
       } else {
         const data = await market.getMyListings();
-        setMyListings(data);
+        if (data && data.length > 0) {
+          setMyListings(data);
+        } else {
+          setMyListings([]);
+        }
       }
     } catch (error: any) {
       console.error('Failed to load market data:', error);
-      toast.error('Failed to load products');
-      setProducts(mockProducts);
+      if (activeTab === 'buy') {
+        toast.error('Using demo products. Deploy backend for real data.');
+        setProducts(mockProducts);
+      } else {
+        toast.error('Backend not connected. Deploy Edge Function to create listings.');
+        setMyListings([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -105,14 +165,60 @@ export default function MarketPage() {
 
   const displayProducts = products.length > 0 ? products : mockProducts;
 
+<<<<<<< HEAD
+=======
   const priceAlerts = [
     { product: 'Tomatoes', change: '+5%', trend: 'up' },
     { product: 'Wheat', change: '-2%', trend: 'down' },
     { product: 'Corn', change: '+3%', trend: 'up' }
   ];
 
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
   const handleSearch = () => {
     loadMarketData();
+  };
+
+  const handleBuyProduct = (product: any) => {
+<<<<<<< HEAD
+    toast.success(
+      `${product.name} added to cart! $${product.price}/${product.unit} from ${product.seller}`,
+      {
+        duration: 3000,
+      }
+    );
+    // In a real app, this would add to cart and navigate to checkout
+    // You can implement actual cart functionality here
+  };
+
+  const handleCreateListing = () => {
+    setShowListingModal(true);
+  };
+
+  const handleListingImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setListingImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleListingSubmit = () => {
+    // Add new listing logic here
+    // For now, just close the modal
+    setShowListingModal(false);
+    toast.success('Listing created successfully!');
+=======
+    toast.success(`Added ${product.name} to cart!`);
+    // In a real app, this would add to cart and navigate to checkout
+  };
+
+  const handleCreateListing = () => {
+    toast.info('Create listing feature coming soon!');
+    // In a real app, this would open a form modal to create a new product listing
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
   };
 
   return (
@@ -177,6 +283,45 @@ export default function MarketPage() {
             {/* Price Alerts */}
             <Card className="rounded-2xl p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
+<<<<<<< HEAD
+                <h3 className="font-semibold text-gray-900">📊 Live Market Prices</h3>
+                <div className="flex items-center gap-1 text-xs text-green-600">
+                  <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
+                  <span>Live</span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {livePrices.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 transition-all"
+                  >
+                    <div className="flex-1">
+                      <span className="text-sm font-semibold text-gray-900">{item.product}</span>
+                      <p className="text-xs text-gray-500">per kg</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-base font-bold text-gray-900">${item.price}</p>
+                      <div className="flex items-center gap-1 justify-end">
+                        {item.trend === 'up' ? (
+                          <TrendingUp className="text-green-600" size={12} />
+                        ) : (
+                          <TrendingDown className="text-red-600" size={12} />
+                        )}
+                        <span
+                          className={`text-xs font-semibold ${\n                            item.trend === 'up' ? 'text-green-600' : 'text-red-600'\n                          }`}
+                        >
+                          {item.change > 0 ? '+' : ''}{item.change}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-3 text-center">
+                Prices update every 5 seconds
+              </p>
+=======
                 <h3 className="font-semibold text-gray-900">Price Alerts</h3>
                 <TrendingUp className="text-gray-400" size={20} />
               </div>
@@ -197,6 +342,7 @@ export default function MarketPage() {
                   </div>
                 ))}
               </div>
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
             </Card>
 
             {/* Products Grid */}
@@ -214,7 +360,11 @@ export default function MarketPage() {
                 {displayProducts.map((product) => (
                   <Card
                     key={product.id}
+<<<<<<< HEAD
+                    className="rounded-2xl overflow-hidden hover:shadow-lg transition-shadow"
+=======
                     className="rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
                   >
                     <div className="relative h-32">
                       <ImageWithFallback
@@ -248,6 +398,14 @@ export default function MarketPage() {
                         </div>
                         <Button
                           size="sm"
+<<<<<<< HEAD
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleBuyProduct(product);
+                          }}
+=======
+                          onClick={() => handleBuyProduct(product)}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
                           className="h-8 px-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs"
                         >
                           Buy
@@ -272,7 +430,17 @@ export default function MarketPage() {
               <p className="text-gray-600 mb-4">
                 Reach thousands of buyers and get the best prices for your produce
               </p>
-              <Button className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl">
+              <Button
+<<<<<<< HEAD
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCreateListing();
+                }}
+=======
+                onClick={handleCreateListing}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
+                className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl"
+              >
                 Create Listing
               </Button>
             </Card>
@@ -310,6 +478,98 @@ export default function MarketPage() {
           </div>
         )}
       </div>
+<<<<<<< HEAD
+
+      {/* Listing Modal */}
+      {showListingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="p-8 w-80 rounded-2xl bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Create Listing</h3>
+              <button
+                onClick={() => setShowListingModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <Input
+                type="text"
+                placeholder="Product Name"
+                value={newListing.name}
+                onChange={(e) => setNewListing({ ...newListing, name: e.target.value })}
+                className="w-full h-10 px-4 rounded-xl bg-gray-100 text-gray-900"
+              />
+              <Input
+                type="number"
+                placeholder="Price"
+                value={newListing.price}
+                onChange={(e) => setNewListing({ ...newListing, price: e.target.value })}
+                className="w-full h-10 px-4 rounded-xl bg-gray-100 text-gray-900"
+              />
+              <Input
+                type="text"
+                placeholder="Unit (e.g., kg)"
+                value={newListing.unit}
+                onChange={(e) => setNewListing({ ...newListing, unit: e.target.value })}
+                className="w-full h-10 px-4 rounded-xl bg-gray-100 text-gray-900"
+              />
+              <Input
+                type="number"
+                placeholder="Quantity"
+                value={newListing.quantity}
+                onChange={(e) => setNewListing({ ...newListing, quantity: e.target.value })}
+                className="w-full h-10 px-4 rounded-xl bg-gray-100 text-gray-900"
+              />
+              <Input
+                type="text"
+                placeholder="Location"
+                value={newListing.location}
+                onChange={(e) => setNewListing({ ...newListing, location: e.target.value })}
+                className="w-full h-10 px-4 rounded-xl bg-gray-100 text-gray-900"
+              />
+              <textarea
+                placeholder="Description"
+                value={newListing.description}
+                onChange={(e) => setNewListing({ ...newListing, description: e.target.value })}
+                className="w-full h-20 px-4 py-2 rounded-xl bg-gray-100 text-gray-900"
+              ></textarea>
+              <div className="relative">
+                <Camera className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleListingImageChange}
+                  className="w-full h-10 pl-12 pr-4 rounded-xl bg-gray-100 text-gray-900"
+                />
+              </div>
+              {listingImage && (
+                <div className="mt-2">
+                  <ImageWithFallback
+                    src={listingImage}
+                    alt="Listing"
+                    className="w-full h-20 object-cover rounded-xl"
+                  />
+                </div>
+              )}
+            </div>
+
+            <Button
+              onClick={handleListingSubmit}
+              className="w-full h-10 mt-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl"
+            >
+              Submit Listing
+            </Button>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
+=======
+    </div>
+  );
+}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd

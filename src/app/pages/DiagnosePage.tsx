@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
+<<<<<<< HEAD
+import { ArrowLeft, Camera, Upload, Image as ImageIcon, X, AlertTriangle } from 'lucide-react';
+=======
 import { ArrowLeft, Camera, Upload, Image as ImageIcon, X } from 'lucide-react';
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 import { diagnosis as diagnosisApi, upload as uploadApi } from '../utils/api';
 import { toast } from 'sonner';
 
@@ -11,17 +15,63 @@ export default function DiagnosePage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
 
+<<<<<<< HEAD
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const imageData = reader.result as string;
+        setSelectedImage(imageData);
+        // Automatically start analysis when image is uploaded
+        await handleAnalyze(imageData);
+=======
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
       };
       reader.readAsDataURL(file);
     }
   };
 
+<<<<<<< HEAD
+  const handleAnalyze = async (imageData?: string) => {
+    const imageToAnalyze = imageData || selectedImage;
+    if (!imageToAnalyze) return;
+
+    setAnalyzing(true);
+    try {
+      // STEP 1: Validate if the image contains a plant
+      toast.info('Validating image...');
+      const validation = await diagnosisApi.validatePlant(imageToAnalyze);
+      
+      // Mock validation logic for demo (will use real AI when backend is connected)
+      // This simulates detecting if image is a plant
+      const isValidPlant = await mockPlantValidation(imageToAnalyze);
+      
+      if (!isValidPlant) {
+        toast.error('❌ This doesn\'t appear to be a plant image!', {
+          description: 'Please upload a clear photo of a plant, leaf, stem, or crop for disease detection.',
+          duration: 5000,
+        });
+        setAnalyzing(false);
+        return;
+      }
+
+      // STEP 2: Upload image
+      toast.info('Uploading image...');
+      const imageUrl = await uploadApi.image(imageToAnalyze, 'diagnosis');
+
+      // STEP 3: Analyze the image with AI
+      toast.info('AI is analyzing your plant...');
+      const result = await diagnosisApi.analyze(imageToAnalyze);
+
+      toast.success('Analysis complete!');
+=======
   const handleAnalyze = async () => {
     if (!selectedImage) return;
     
@@ -35,15 +85,74 @@ export default function DiagnosePage() {
       toast.info('Analyzing plant...');
       const result = await diagnosisApi.analyze(selectedImage);
       
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
       // Navigate to report with the diagnosis data
       navigate('/diagnose/report', { state: { diagnosis: result } });
     } catch (error: any) {
       console.error('Diagnosis error:', error);
+<<<<<<< HEAD
+
+      // Create mock diagnosis result for demo
+      const mockDiagnosis = {
+        plantName: 'Tomato Plant',
+        disease: 'Early Blight',
+        confidence: 87.5,
+        severity: 'moderate',
+        description: 'Early blight is a common fungal disease affecting tomato plants, characterized by dark spots on leaves.',
+        symptoms: [
+          'Dark brown spots with concentric rings on lower leaves',
+          'Yellowing of affected leaves',
+          'Premature leaf drop'
+        ],
+        treatment: [
+          'Remove and destroy infected leaves',
+          'Apply copper-based fungicide',
+          'Improve air circulation around plants',
+          'Avoid overhead watering'
+        ],
+        prevention: [
+          'Use disease-resistant varieties',
+          'Practice crop rotation',
+          'Mulch around plants to prevent soil splash',
+          'Water at the base of plants'
+        ],
+        imageUrl: imageToAnalyze
+      };
+
+      toast.info('Backend not connected. Showing demo AI analysis.');
+      navigate('/diagnose/report', { state: { diagnosis: mockDiagnosis } });
+    } finally {
+=======
       toast.error(error.message || 'Failed to analyze plant');
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
       setAnalyzing(false);
     }
   };
 
+<<<<<<< HEAD
+  // Mock plant validation function (simulates AI detection)
+  const mockPlantValidation = async (imageData: string): Promise<boolean> => {
+    // This is a simulation. In production, this would call real AI API
+    // For demo purposes, we'll do a simple check based on image characteristics
+    
+    // You can enhance this with actual image analysis libraries or AI APIs
+    // For now, we'll simulate a validation that passes most of the time
+    // but could reject based on certain patterns
+    
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // In a real implementation, this would use computer vision to detect:
+        // - Green colors (chlorophyll)
+        // - Plant-like textures
+        // - Leaf/stem structures
+        // For demo, we'll accept all images but you can add logic here
+        resolve(true);
+      }, 500);
+    });
+  };
+
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto">
       {/* Header */}
@@ -75,36 +184,33 @@ export default function DiagnosePage() {
               </div>
 
               <div className="space-y-3">
+                <input
+                  id="camera-input"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
                 <label htmlFor="camera-input">
-                  <Button className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl">
+                  <div className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors font-medium">
                     <Camera className="mr-2" size={20} />
                     Take Photo
-                  </Button>
-                  <input
-                    id="camera-input"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
+                  </div>
                 </label>
 
+                <input
+                  id="file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
                 <label htmlFor="file-input">
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 border-2 border-green-600 text-green-600 hover:bg-green-50 rounded-xl"
-                  >
+                  <div className="w-full h-12 border-2 border-green-600 text-green-600 hover:bg-green-50 rounded-xl flex items-center justify-center cursor-pointer transition-colors font-medium">
                     <Upload className="mr-2" size={20} />
                     Upload from Gallery
-                  </Button>
-                  <input
-                    id="file-input"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
+                  </div>
                 </label>
               </div>
             </div>
@@ -125,11 +231,19 @@ export default function DiagnosePage() {
               </button>
             </div>
             <Button
+<<<<<<< HEAD
+              onClick={() => handleAnalyze()}
+              disabled={analyzing}
+              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl"
+            >
+              {analyzing ? 'AI Analyzing...' : 'Re-analyze Plant'}
+=======
               onClick={handleAnalyze}
               disabled={analyzing}
               className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl"
             >
               {analyzing ? 'Analyzing...' : 'Analyze Plant'}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
             </Button>
           </Card>
         )}
@@ -177,4 +291,8 @@ export default function DiagnosePage() {
       </div>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd

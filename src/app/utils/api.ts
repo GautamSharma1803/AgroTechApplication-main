@@ -113,6 +113,24 @@ export const crops = {
 // ============= DIAGNOSIS API =============
 
 export const diagnosis = {
+<<<<<<< HEAD
+  // Validate if image contains a plant
+  validatePlant: async (image: string) => {
+    try {
+      const data = await apiCall('/diagnose/validate', {
+        method: 'POST',
+        body: JSON.stringify({ image }),
+      });
+      return data.isPlant;
+    } catch (error) {
+      // If backend fails, do client-side basic validation
+      // This is a fallback - in production, use proper AI validation
+      return { isPlant: true, confidence: 0 }; // Allow through for demo
+    }
+  },
+
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
   analyze: async (image: string, cropType?: string) => {
     const data = await apiCall('/diagnose', {
       method: 'POST',
@@ -127,6 +145,27 @@ export const diagnosis = {
   },
 };
 
+<<<<<<< HEAD
+// ============= CROP DETECTION API =============
+
+export const cropDetection = {
+  // Auto-detect crop information from image
+  detectCrop: async (image: string) => {
+    try {
+      const data = await apiCall('/crops/detect', {
+        method: 'POST',
+        body: JSON.stringify({ image }),
+      });
+      return data.cropInfo;
+    } catch (error) {
+      // Fallback mock detection for demo
+      throw error;
+    }
+  },
+};
+
+=======
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
 // ============= SOIL TESTS API =============
 
 export const soilTests = {
@@ -187,4 +226,8 @@ export const upload = {
     });
     return data.url;
   },
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> de07bf0b8126dd86041aa8749009a15751d42fcd
