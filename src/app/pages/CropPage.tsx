@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { ArrowLeft, Plus, Calendar, Droplets, TrendingUp, AlertCircle } from 'lucide-react';
+import { Input } from '../components/ui/input';
+import { ArrowLeft, Plus, Calendar, Droplets, TrendingUp, AlertCircle, X } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { crops as cropsApi } from '../utils/api';
 import { toast } from 'sonner';
@@ -12,6 +13,16 @@ export default function CropPage() {
   const [filter, setFilter] = useState('all');
   const [crops, setCrops] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newCrop, setNewCrop] = useState({
+    name: '',
+    variety: '',
+    planted: '',
+    harvest: '',
+    health: 'good',
+    image: '',
+    tasks: [] as string[]
+  });
 
   useEffect(() => {
     loadCrops();
@@ -20,14 +31,64 @@ export default function CropPage() {
   async function loadCrops() {
     try {
       const data = await cropsApi.getAll();
-      setCrops(data);
+      if (data && data.length > 0) {
+        setCrops(data);
+      } else {
+        // Use mock data as fallback if no crops found
+        toast.info('No crops found. Showing demo data.');
+        setCrops(mockCrops);
+      }
     } catch (error: any) {
       console.error('Failed to load crops:', error);
-      toast.error('Failed to load crops');
+      toast.error('Using demo crops. Deploy backend for real data.');
       // Use mock data as fallback
       setCrops(mockCrops);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleAddCrop() {
+    if (!newCrop.name || !newCrop.variety) {
+      toast.error('Please fill in crop name and variety');
+      return;
+    }
+
+    try {
+      const crop = await cropsApi.create(newCrop);
+      setCrops([...crops, crop]);
+      toast.success('Crop added successfully!');
+      setShowAddModal(false);
+      setNewCrop({
+        name: '',
+        variety: '',
+        planted: '',
+        harvest: '',
+        health: 'good',
+        image: '',
+        tasks: []
+      });
+    } catch (error: any) {
+      console.error('Failed to add crop:', error);
+      toast.error('Backend not connected. Deploy Edge Function to add crops.');
+      // Optionally add to local state as demo
+      const demoCrop = {
+        id: Date.now(),
+        ...newCrop,
+        image: newCrop.image || 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400'
+      };
+      setCrops([...crops, demoCrop]);
+      toast.info('Added as demo crop (not saved to database)');
+      setShowAddModal(false);
+      setNewCrop({
+        name: '',
+        variety: '',
+        planted: '',
+        harvest: '',
+        health: 'good',
+        image: '',
+        tasks: []
+      });
     }
   }
 
@@ -91,7 +152,10 @@ export default function CropPage() {
             </button>
             <h1 className="text-white text-2xl font-bold">My Crops</h1>
           </div>
-          <button className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+          >
             <Plus className="text-white" size={24} />
           </button>
         </div>
@@ -229,7 +293,10 @@ export default function CropPage() {
         </div>
 
         {/* Add Crop Card */}
-        <Card className="rounded-2xl p-8 mt-4 border-2 border-dashed border-gray-300 cursor-pointer hover:border-emerald-600 hover:bg-emerald-50/50 transition-colors">
+        <Card 
+          onClick={() => setShowAddModal(true)}
+          className="rounded-2xl p-8 mt-4 border-2 border-dashed border-gray-300 cursor-pointer hover:border-emerald-600 hover:bg-emerald-50/50 transition-colors"
+        >
           <div className="text-center">
             <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <Plus className="text-emerald-600" size={32} />
@@ -241,6 +308,97 @@ export default function CropPage() {
           </div>
         </Card>
       </div>
+
+      {/* Add Crop Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Add New Crop</h2>
+              <button onClick={() => setShowAddModal(false)}>
+                <X size={24} className="text-gray-500 hover:text-gray-700" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Crop Name *
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g., Tomatoes"
+                  value={newCrop.name}
+                  onChange={(e) => setNewCrop({ ...newCrop, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Variety *
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g., Cherry"
+                  value={newCrop.variety}
+                  onChange={(e) => setNewCrop({ ...newCrop, variety: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Planted (optional)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g., 15 days ago"
+                  value={newCrop.planted}
+                  onChange={(e) => setNewCrop({ ...newCrop, planted: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Harvest In (optional)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g., 45 days"
+                  value={newCrop.harvest}
+                  onChange={(e) => setNewCrop({ ...newCrop, harvest: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Health Status
+                </label>
+                <select
+                  value={newCrop.health}
+                  onChange={(e) => setNewCrop({ ...newCrop, health: e.target.value })}
+                  className="w-full h-9 rounded-md border border-gray-300 px-3 py-1 text-base bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/50 outline-none"
+                >
+                  <option value="excellent">Excellent</option>
+                  <option value="good">Good</option>
+                  <option value="warning">Needs Attention</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Image URL (optional)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="https://example.com/image.jpg"
+                  value={newCrop.image}
+                  onChange={(e) => setNewCrop({ ...newCrop, image: e.target.value })}
+                />
+              </div>
+            </div>
+            <Button
+              onClick={handleAddCrop}
+              className="w-full mt-6 h-11 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-semibold"
+            >
+              Add Crop
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
