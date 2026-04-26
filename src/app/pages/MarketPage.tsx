@@ -1,29 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
-import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { 
-  ArrowLeft, 
-  Search, 
-  Filter, 
-  ShoppingCart, 
-  TrendingUp,
-  TrendingDown,
-  MapPin,
-  Star,
-  Plus,
-  X,
-  Camera,
-  Loader2
-} from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { market } from '../utils/api';
 import { toast } from 'sonner';
 import { getUserLocation, getLocationName, saveLocation, getSavedLocation } from '../utils/location';
+import { useCart } from '../contexts/CartContext';
 
 export default function MarketPage() {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<any[]>([]);
@@ -41,11 +24,16 @@ export default function MarketPage() {
   });
   const [userLocation, setUserLocation] = useState<any>(null);
   const [livePrices, setLivePrices] = useState<any[]>([
-    { product: 'Tomatoes', price: 45, change: 5, trend: 'up' },
-    { product: 'Wheat', price: 30, change: -2, trend: 'down' },
-    { product: 'Corn', price: 35, change: 3, trend: 'up' },
-    { product: 'Rice', price: 42, change: 1, trend: 'up' },
-    { product: 'Potatoes', price: 28, change: -1, trend: 'down' },
+    { product: 'Tomatoes', price: 40, change: 5, trend: 'up' },
+    { product: 'Onions', price: 25, change: -3, trend: 'down' },
+    { product: 'Potatoes', price: 22, change: 2, trend: 'up' },
+    { product: 'Rice (Basmati)', price: 65, change: 1, trend: 'up' },
+    { product: 'Wheat', price: 28, change: -1, trend: 'down' },
+    { product: 'Corn (Maize)', price: 20, change: 3, trend: 'up' },
+    { product: 'Cabbage', price: 15, change: -2, trend: 'down' },
+    { product: 'Cauliflower', price: 30, change: 4, trend: 'up' },
+    { product: 'Carrots', price: 35, change: 2, trend: 'up' },
+    { product: 'Beans (Green)', price: 45, change: 6, trend: 'up' },
   ]);
 
   // Simulate live price updates
@@ -191,6 +179,7 @@ export default function MarketPage() {
   };
 
   const handleBuyProduct = (product: any) => {
+    addToCart(product);
     toast.success(
       `${product.name} added to cart! ₹${product.price}/${product.unit} from ${product.seller}`,
       {
@@ -276,6 +265,11 @@ export default function MarketPage() {
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter') {
+                handleSearch();
+              }
+            }}
             className="w-full h-12 pl-12 pr-12 rounded-xl bg-white/95 text-gray-900"
           />
           <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" onClick={handleSearch}>

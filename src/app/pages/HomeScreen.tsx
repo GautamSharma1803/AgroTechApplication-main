@@ -13,7 +13,6 @@ import {
   User,
   Search,
   Calendar,
-  AlertCircle,
   Info
 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
@@ -28,6 +27,7 @@ export default function HomeScreen() {
   const [weather, setWeather] = useState<any>(null);
   const [recentCrops, setRecentCrops] = useState<any[]>([]);
   const [userLocation, setUserLocation] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadData();
@@ -70,6 +70,13 @@ export default function HomeScreen() {
     }
   }
 
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      // Navigate to crops page with search query
+      navigate(`/crops?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   const features = [
     {
       title: 'Diagnose',
@@ -99,11 +106,6 @@ export default function HomeScreen() {
       color: 'bg-orange-100 text-orange-600',
       path: '/market'
     }
-  ];
-
-  const alerts = [
-    { message: 'Water your tomato plants today', type: 'info' },
-    { message: 'Disease detected in wheat field', type: 'warning' }
   ];
 
   return (
@@ -138,6 +140,9 @@ export default function HomeScreen() {
             type="text"
             placeholder="Search crops, diseases..."
             className="w-full h-12 pl-12 pr-4 rounded-xl bg-white/95 text-gray-900 placeholder-gray-500"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={handleSearch}
           />
         </div>
       </div>
@@ -166,35 +171,14 @@ export default function HomeScreen() {
           </div>
         </Card>
 
-        {/* Alerts */}
-        {alerts.length > 0 && (
-          <div className="mb-6 space-y-3">
-            {alerts.map((alert, index) => (
-              <div
-                key={index}
-                className={`p-4 rounded-xl flex items-center gap-3 ${
-                  alert.type === 'warning'
-                    ? 'bg-orange-50 border border-orange-200'
-                    : 'bg-blue-50 border border-blue-200'
-                }`}
-              >
-                <AlertCircle
-                  className={alert.type === 'warning' ? 'text-orange-600' : 'text-blue-600'}
-                  size={20}
-                />
-                <p className="text-sm text-gray-700 flex-1">{alert.message}</p>
-              </div>
-            ))}
-            {/* System Status Link */}
-            <button
-              onClick={() => navigate('/system-status')}
-              className="w-full p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors flex items-center gap-3 text-gray-700"
-            >
-              <Info size={18} />
-              <span className="text-sm font-medium">Check Backend Status</span>
-            </button>
-          </div>
-        )}
+        {/* System Status Link */}
+        <button
+          onClick={() => navigate('/system-status')}
+          className="w-full mb-6 p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors flex items-center gap-3 text-gray-700"
+        >
+          <Info size={18} />
+          <span className="text-sm font-medium">Check Backend Status</span>
+        </button>
 
         {/* Quick Actions */}
         <div className="mb-6">
@@ -215,15 +199,14 @@ export default function HomeScreen() {
                   <p className="text-sm text-gray-600">{feature.description}</p>
                 </Card>
               );
-            })}
-          </div>
+            })}</div>
         </div>
 
         {/* Recent Activity */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
-            <button className="text-green-600 text-sm">View All</button>
+            <button className="text-green-600 text-sm" onClick={() => navigate('/crops')}>View All</button>
           </div>
           <div className="space-y-3">
             {recentCrops.map((crop, index) => (

@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import OnboardingPage from "./pages/OnboardingPage";
+import SplashScreen from "./pages/SplashScreen";
 import HomeScreen from "./pages/HomeScreen";
 import DiagnosePage from "./pages/DiagnosePage";
 import DiagnoseReportPage from "./pages/DiagnoseReportPage";
@@ -18,7 +18,7 @@ import CartPage from "./pages/CartPage";
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: OnboardingPage,
+    Component: SplashScreen,
   },
   {
     path: "/login",

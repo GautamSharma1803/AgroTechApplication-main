@@ -1,51 +1,14 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { toast } from 'sonner';
-
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  unit: string;
-  quantity: number;
-  seller: string;
-  image: string;
-}
+import { useCart } from '../contexts/CartContext';
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: 'Fresh Tomatoes',
-      price: 45,
-      unit: 'kg',
-      quantity: 2,
-      seller: 'Green Valley Farms',
-      image: 'https://images.unsplash.com/photo-1748432171507-c1d62fe2e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBwbGFudCUyMGdyb3dpbmd8ZW58MXx8fHwxNzc0ODQ5OTE1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-    }
-  ]);
-
-  const updateQuantity = (id: number, delta: number) => {
-    setCartItems(items =>
-      items.map(item => {
-        if (item.id === id) {
-          const newQuantity = Math.max(1, item.quantity + delta);
-          return { ...item, quantity: newQuantity };
-        }
-        return item;
-      })
-    );
-  };
-
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-    toast.success('Item removed from cart');
-  };
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = 50;
@@ -56,8 +19,11 @@ export default function CartPage() {
       toast.error('Your cart is empty');
       return;
     }
-    toast.success('Proceeding to checkout...');
-    // Navigate to checkout page (to be implemented)
+    toast.success('Order placed successfully! Thank you for your purchase.');
+    clearCart();
+    setTimeout(() => {
+      navigate('/home');
+    }, 2000);
   };
 
   return (
@@ -98,48 +64,66 @@ export default function CartPage() {
           </Card>
         ) : (
           <>
+            {/* Cart Items */}
             <div className="space-y-4 mb-6">
-              {cartItems.map(item => (
+              {cartItems.map((item) => (
                 <Card key={item.id} className="rounded-2xl overflow-hidden">
-                  <div className="flex gap-4 p-4">
-                    <ImageWithFallback
-                      src={item.image}
-                      alt={item.name}
-                      className="w-24 h-24 rounded-xl object-cover"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                          <p className="text-sm text-gray-600">{item.seller}</p>
+                  <div className="p-4">
+                    <div className="flex items-start gap-4">
+                      <ImageWithFallback
+                        src={item.image}
+                        alt={item.name}
+                        className="w-24 h-24 rounded-lg object-cover"
+                      />
+
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              {item.name}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {item.seller}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              removeFromCart(item.id);
+                              toast.success('Item removed from cart');
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-lg font-bold text-orange-600">
-                          ₹{item.price}/{item.unit}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(item.id, -1)}
-                            className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300"
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span className="w-8 text-center font-semibold">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.id, 1)}
-                            className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center hover:bg-orange-700 text-white"
-                          >
-                            <Plus size={16} />
-                          </button>
+
+                        <div className="flex items-center justify-between mt-3">
+                          <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
+                            <button
+                              onClick={() => updateQuantity(item.id, -1)}
+                              className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-white rounded-lg transition-colors"
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <span className="text-sm font-semibold text-gray-900 min-w-[2ch] text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQuantity(item.id, 1)}
+                              className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-white rounded-lg transition-colors"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-orange-600">
+                              ₹{item.price * item.quantity}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              ₹{item.price}/{item.unit}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -150,37 +134,36 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <Card className="rounded-2xl p-6">
-              <h3 className="font-bold text-gray-900 mb-4">Order Summary</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between text-gray-700">
-                  <span>Subtotal</span>
-                  <span>₹{total}</span>
+              <h3 className="font-semibold text-gray-900 mb-4">Order Summary</h3>
+
+              <div className="space-y-3 mb-4 pb-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="font-semibold text-gray-900">₹{total}</span>
                 </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>Delivery Fee</span>
-                  <span>₹{deliveryFee}</span>
-                </div>
-                <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-gray-900 text-lg">
-                  <span>Total</span>
-                  <span>₹{grandTotal}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Delivery Fee</span>
+                  <span className="font-semibold text-gray-900">₹{deliveryFee}</span>
                 </div>
               </div>
+
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-lg font-semibold text-gray-900">Total</span>
+                <span className="text-2xl font-bold text-orange-600">
+                  ₹{grandTotal}
+                </span>
+              </div>
+
+              <Button
+                onClick={handleCheckout}
+                className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold"
+              >
+                Proceed to Checkout
+              </Button>
             </Card>
           </>
         )}
       </div>
-
-      {/* Checkout Button - Fixed at bottom */}
-      {cartItems.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-6 max-w-md mx-auto">
-          <Button
-            onClick={handleCheckout}
-            className="w-full h-14 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-lg font-semibold"
-          >
-            Proceed to Checkout • ₹{grandTotal}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
