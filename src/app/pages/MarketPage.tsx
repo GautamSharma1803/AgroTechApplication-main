@@ -1,22 +1,14 @@
-import { useState ,useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ShoppingCart, Search, Filter, TrendingUp, TrendingDown, Star, MapPin, Camera, X } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { Card } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
 import { market } from '../utils/api';
 import { toast } from 'sonner';
 import { getUserLocation, getLocationName, saveLocation, getSavedLocation } from '../utils/location';
 import { useCart } from '../contexts/CartContext';
-import {
-  FiArrowLeft,
-  FiShoppingCart,
-  FiSearch,
-  FiFilter,
-  FiTrendingUp,
-  FiTrendingDown,
-  FiStar,
-  FiMapPin,
-  FiX,
-  FiCamera
-} from 'react-icons/fi';
 
 export default function MarketPage() {
   const navigate = useNavigate();
@@ -235,7 +227,7 @@ export default function MarketPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/home')} className="text-white">
-              <FiArrowLeft size={24} />
+              <ArrowLeft size={24} />
             </button>
             <h1 className="text-white text-2xl font-bold">Marketplace</h1>
           </div>
@@ -243,7 +235,7 @@ export default function MarketPage() {
             onClick={() => navigate('/cart')}
             className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
           >
-            <FiShoppingCart className="text-white" size={20} />
+            <ShoppingCart className="text-white" size={20} />
           </button>
         </div>
 
@@ -273,7 +265,7 @@ export default function MarketPage() {
 
         {/* Search */}
         <div className="relative">
-          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <Input
             type="text"
             placeholder="Search products..."
@@ -287,7 +279,7 @@ export default function MarketPage() {
             className="w-full h-12 pl-12 pr-12 rounded-xl bg-white/95 text-gray-900"
           />
           <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" onClick={handleSearch}>
-            <FiFilter size={20} />
+            <Filter size={20} />
           </button>
         </div>
       </div>
@@ -323,9 +315,9 @@ export default function MarketPage() {
                       <p className="text-base font-bold text-gray-900">₹{item.price}</p>
                       <div className="flex items-center gap-1 justify-end">
                         {item.trend === 'up' ? (
-                          <FiTrendingUp className="text-green-600" size={12} />
+                          <TrendingUp className="text-green-600" size={12} />
                         ) : (
-                          <FiTrendingDown className="text-red-600" size={12} />
+                          <TrendingDown className="text-red-600" size={12} />
                         )}
                         <span
                           className={`text-xs font-semibold ${
@@ -377,11 +369,11 @@ export default function MarketPage() {
                         {product.name}
                       </h3>
                       <div className="flex items-center gap-1 mb-2">
-                        <FiStar className="text-yellow-500 fill-yellow-500" size={12} />
+                        <Star className="text-yellow-500 fill-yellow-500" size={12} />
                         <span className="text-xs text-gray-600">{product.rating}</span>
                       </div>
                       <p className="text-xs text-gray-600 mb-2 flex items-center gap-1">
-                        <FiMapPin size={12} />
+                        <MapPin size={12} />
                         {product.location}
                       </p>
                       <div className="flex items-center justify-between">
@@ -413,7 +405,7 @@ export default function MarketPage() {
           <div className="space-y-6">
             <Card className="rounded-2xl p-8 text-center border-2 border-dashed border-gray-300">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FiTrendingUp className="text-orange-600" size={32} />
+                <TrendingUp className="text-orange-600" size={32} />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 List Your Products
@@ -523,7 +515,7 @@ export default function MarketPage() {
                 className="w-full h-20 px-4 py-2 rounded-xl bg-gray-100 text-gray-900"
               ></textarea>
               <div className="relative">
-                <FiCamera className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <Camera className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <Input
                   type="file"
                   accept="image/*"
