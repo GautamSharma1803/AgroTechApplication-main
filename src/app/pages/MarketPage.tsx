@@ -5,6 +5,18 @@ import { market } from '../utils/api';
 import { toast } from 'sonner';
 import { getUserLocation, getLocationName, saveLocation, getSavedLocation } from '../utils/location';
 import { useCart } from '../contexts/CartContext';
+import {
+  FiArrowLeft,
+  FiShoppingCart,
+  FiSearch,
+  FiFilter,
+  FiTrendingUp,
+  FiTrendingDown,
+  FiStar,
+  FiMapPin,
+  FiX,
+  FiCamera
+} from 'react-icons/fi';
 
 export default function MarketPage() {
   const navigate = useNavigate();
@@ -223,7 +235,7 @@ export default function MarketPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/home')} className="text-white">
-              <ArrowLeft size={24} />
+              <FiArrowLeft size={24} />
             </button>
             <h1 className="text-white text-2xl font-bold">Marketplace</h1>
           </div>
@@ -231,7 +243,7 @@ export default function MarketPage() {
             onClick={() => navigate('/cart')}
             className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
           >
-            <ShoppingCart className="text-white" size={20} />
+            <FiShoppingCart className="text-white" size={20} />
           </button>
         </div>
 
@@ -261,7 +273,7 @@ export default function MarketPage() {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <Input
             type="text"
             placeholder="Search products..."
@@ -275,7 +287,7 @@ export default function MarketPage() {
             className="w-full h-12 pl-12 pr-12 rounded-xl bg-white/95 text-gray-900"
           />
           <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" onClick={handleSearch}>
-            <Filter size={20} />
+            <FiFilter size={20} />
           </button>
         </div>
       </div>
@@ -311,9 +323,9 @@ export default function MarketPage() {
                       <p className="text-base font-bold text-gray-900">₹{item.price}</p>
                       <div className="flex items-center gap-1 justify-end">
                         {item.trend === 'up' ? (
-                          <TrendingUp className="text-green-600" size={12} />
+                          <FiTrendingUp className="text-green-600" size={12} />
                         ) : (
-                          <TrendingDown className="text-red-600" size={12} />
+                          <FiTrendingDown className="text-red-600" size={12} />
                         )}
                         <span
                           className={`text-xs font-semibold ${
@@ -365,11 +377,11 @@ export default function MarketPage() {
                         {product.name}
                       </h3>
                       <div className="flex items-center gap-1 mb-2">
-                        <Star className="text-yellow-500 fill-yellow-500" size={12} />
+                        <FiStar className="text-yellow-500 fill-yellow-500" size={12} />
                         <span className="text-xs text-gray-600">{product.rating}</span>
                       </div>
                       <p className="text-xs text-gray-600 mb-2 flex items-center gap-1">
-                        <MapPin size={12} />
+                        <FiMapPin size={12} />
                         {product.location}
                       </p>
                       <div className="flex items-center justify-between">
@@ -401,7 +413,7 @@ export default function MarketPage() {
           <div className="space-y-6">
             <Card className="rounded-2xl p-8 text-center border-2 border-dashed border-gray-300">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="text-orange-600" size={32} />
+                <FiTrendingUp className="text-orange-600" size={32} />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 List Your Products
