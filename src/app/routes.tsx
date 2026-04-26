@@ -11,6 +11,9 @@ import SoilHealthReportPage from "./pages/SoilHealthReportPage";
 import CropPage from "./pages/CropPage";
 import MarketPage from "./pages/MarketPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
+import ProfilePage from "./pages/ProfilePage";
+import NotificationsPage from "./pages/NotificationsPage";
+import CartPage from "./pages/CartPage";
 
 export const router = createBrowserRouter([
   {
@@ -60,5 +63,17 @@ export const router = createBrowserRouter([
   {
     path: "/system-status",
     Component: SystemStatusPage,
+  },
+  {
+    path: "/profile",
+    Component: ProfilePage,
+  },
+  {
+    path: "/notifications",
+    Component: NotificationsPage,
+  },
+  {
+    path: "/cart",
+    Component: CartPage,
   },
 ]);

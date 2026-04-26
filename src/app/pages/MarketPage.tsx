@@ -20,6 +20,7 @@ import {
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { market } from '../utils/api';
 import { toast } from 'sonner';
+import { getUserLocation, getLocationName, saveLocation, getSavedLocation } from '../utils/location';
 
 export default function MarketPage() {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ export default function MarketPage() {
     location: '',
     description: ''
   });
+  const [userLocation, setUserLocation] = useState<any>(null);
   const [livePrices, setLivePrices] = useState<any[]>([
     { product: 'Tomatoes', price: 45, change: 5, trend: 'up' },
     { product: 'Wheat', price: 30, change: -2, trend: 'down' },
@@ -68,8 +70,32 @@ export default function MarketPage() {
   }, []);
 
   useEffect(() => {
+    loadUserLocation();
+  }, []);
+
+  useEffect(() => {
     loadMarketData();
   }, [activeTab]);
+
+  async function loadUserLocation() {
+    let location = getSavedLocation();
+
+    if (!location) {
+      const coords = await getUserLocation();
+      if (coords) {
+        const locationName = await getLocationName(coords.latitude, coords.longitude);
+        location = {
+          ...coords,
+          city: locationName?.city || 'Your City',
+          country: locationName?.country || 'India'
+        };
+        saveLocation(location);
+        setUserLocation(location);
+      }
+    } else {
+      setUserLocation(location);
+    }
+  }
 
   async function loadMarketData() {
     setLoading(true);
@@ -80,7 +106,7 @@ export default function MarketPage() {
           setProducts(data);
         } else {
           // Use mock data if no products found
-          setProducts(mockProducts);
+          setProducts(getMockProducts());
         }
       } else {
         const data = await market.getMyListings();
@@ -94,7 +120,7 @@ export default function MarketPage() {
       console.error('Failed to load market data:', error);
       if (activeTab === 'buy') {
         toast.error('Using demo products. Deploy backend for real data.');
-        setProducts(mockProducts);
+        setProducts(getMockProducts());
       } else {
         toast.error('Backend not connected. Deploy Edge Function to create listings.');
         setMyListings([]);
@@ -104,58 +130,61 @@ export default function MarketPage() {
     }
   }
 
-  const mockProducts = [
-    {
-      id: 1,
-      name: 'Fresh Tomatoes',
-      price: 45,
-      unit: 'kg',
-      seller: 'Green Valley Farms',
-      sellerName: 'Green Valley Farms',
-      location: 'California',
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1748432171507-c1d62fe2e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBwbGFudCUyMGdyb3dpbmd8ZW58MXx8fHwxNzc0ODQ5OTE1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      stock: 'In Stock'
-    },
-    {
-      id: 2,
-      name: 'Organic Wheat',
-      price: 30,
-      unit: 'kg',
-      seller: 'Sunrise Agriculture',
-      sellerName: 'Sunrise Agriculture',
-      location: 'Texas',
-      rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1627842822558-c1f15aef9838?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aGVhdCUyMGZpZWxkJTIwZ29sZGVuJTIwaGFydmVzdHxlbnwxfHx8fDE3NzQ5NDMyMTV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      stock: 'In Stock'
-    },
-    {
-      id: 3,
-      name: 'Sweet Corn',
-      price: 35,
-      unit: 'kg',
-      seller: 'Harvest Moon Farm',
-      sellerName: 'Harvest Moon Farm',
-      location: 'Iowa',
-      rating: 4.7,
-      image: 'https://images.unsplash.com/photo-1769258958976-8852440011b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZ3JpY3VsdHVyYWwlMjBjcm9wcyUyMHZlZ2V0YWJsZXN8ZW58MXx8fHwxNzc0OTQzMjE0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      stock: 'Limited'
-    },
-    {
-      id: 4,
-      name: 'Fresh Vegetables Mix',
-      price: 55,
-      unit: 'kg',
-      seller: 'Valley Fresh Produce',
-      sellerName: 'Valley Fresh Produce',
-      location: 'Oregon',
-      rating: 4.6,
-      image: 'https://images.unsplash.com/photo-1599275247787-40daab5777bc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtZXIlMjBtYXJrZXQlMjBmcmVzaCUyMHByb2R1Y2V8ZW58MXx8fHwxNzc0OTQzMjE0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      stock: 'In Stock'
-    }
-  ];
+  const getMockProducts = () => {
+    const locationName = userLocation?.city || 'Nearby';
+    return [
+      {
+        id: 1,
+        name: 'Fresh Tomatoes',
+        price: 45,
+        unit: 'kg',
+        seller: 'Green Valley Farms',
+        sellerName: 'Green Valley Farms',
+        location: locationName,
+        rating: 4.8,
+        image: 'https://images.unsplash.com/photo-1748432171507-c1d62fe2e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBwbGFudCUyMGdyb3dpbmd8ZW58MXx8fHwxNzc0ODQ5OTE1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+        stock: 'In Stock'
+      },
+      {
+        id: 2,
+        name: 'Organic Wheat',
+        price: 30,
+        unit: 'kg',
+        seller: 'Sunrise Agriculture',
+        sellerName: 'Sunrise Agriculture',
+        location: locationName,
+        rating: 4.9,
+        image: 'https://images.unsplash.com/photo-1627842822558-c1f15aef9838?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aGVhdCUyMGZpZWxkJTIwZ29sZGVuJTIwaGFydmVzdHxlbnwxfHx8fDE3NzQ5NDMyMTV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+        stock: 'In Stock'
+      },
+      {
+        id: 3,
+        name: 'Sweet Corn',
+        price: 35,
+        unit: 'kg',
+        seller: 'Harvest Moon Farm',
+        sellerName: 'Harvest Moon Farm',
+        location: locationName,
+        rating: 4.7,
+        image: 'https://images.unsplash.com/photo-1769258958976-8852440011b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZ3JpY3VsdHVyYWwlMjBjcm9wcyUyMHZlZ2V0YWJsZXN8ZW58MXx8fHwxNzc0OTQzMjE0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+        stock: 'Limited'
+      },
+      {
+        id: 4,
+        name: 'Fresh Vegetables Mix',
+        price: 55,
+        unit: 'kg',
+        seller: 'Valley Fresh Produce',
+        sellerName: 'Valley Fresh Produce',
+        location: locationName,
+        rating: 4.6,
+        image: 'https://images.unsplash.com/photo-1599275247787-40daab5777bc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtZXIlMjBtYXJrZXQlMjBmcmVzaCUyMHByb2R1Y2V8ZW58MXx8fHwxNzc0OTQzMjE0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+        stock: 'In Stock'
+      }
+    ];
+  };
 
-  const displayProducts = products.length > 0 ? products : mockProducts;
+  const displayProducts = products.length > 0 ? products : getMockProducts();
 
   const handleSearch = () => {
     loadMarketData();
@@ -163,13 +192,15 @@ export default function MarketPage() {
 
   const handleBuyProduct = (product: any) => {
     toast.success(
-      `${product.name} added to cart! $${product.price}/${product.unit} from ${product.seller}`,
+      `${product.name} added to cart! ₹${product.price}/${product.unit} from ${product.seller}`,
       {
         duration: 3000,
       }
     );
-    // In a real app, this would add to cart and navigate to checkout
-    // You can implement actual cart functionality here
+    // Navigate to cart page
+    setTimeout(() => {
+      navigate('/cart');
+    }, 1000);
   };
 
   const handleCreateListing = () => {
@@ -205,7 +236,10 @@ export default function MarketPage() {
             </button>
             <h1 className="text-white text-2xl font-bold">Marketplace</h1>
           </div>
-          <button className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+          <button
+            onClick={() => navigate('/cart')}
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+          >
             <ShoppingCart className="text-white" size={20} />
           </button>
         </div>
@@ -262,6 +296,11 @@ export default function MarketPage() {
                   <span>Live</span>
                 </div>
               </div>
+              {userLocation && (
+                <p className="text-xs text-gray-500 mb-3">
+                  📍 {userLocation.city}, {userLocation.country}
+                </p>
+              )}
               <div className="space-y-3">
                 {livePrices.map((item, index) => (
                   <div
@@ -273,7 +312,7 @@ export default function MarketPage() {
                       <p className="text-xs text-gray-500">per kg</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-base font-bold text-gray-900">${item.price}</p>
+                      <p className="text-base font-bold text-gray-900">₹{item.price}</p>
                       <div className="flex items-center gap-1 justify-end">
                         {item.trend === 'up' ? (
                           <TrendingUp className="text-green-600" size={12} />
@@ -281,7 +320,9 @@ export default function MarketPage() {
                           <TrendingDown className="text-red-600" size={12} />
                         )}
                         <span
-                          className={`text-xs font-semibold ${                            item.trend === 'up' ? 'text-green-600' : 'text-red-600'                          }`}
+                          className={`text-xs font-semibold ${
+                            item.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                          }`}
                         >
                           {item.change > 0 ? '+' : ''}{item.change}%
                         </span>
@@ -338,7 +379,7 @@ export default function MarketPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-lg font-bold text-orange-600">
-                            ${product.price}
+                            ₹{product.price}
                           </p>
                           <p className="text-xs text-gray-500">per {product.unit}</p>
                         </div>
@@ -391,7 +432,7 @@ export default function MarketPage() {
                     <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900">Fresh Lettuce</p>
-                      <p className="text-sm text-gray-600">$25/kg • 50kg available</p>
+                      <p className="text-sm text-gray-600">₹25/kg • 50kg available</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-green-600">5 offers</p>
@@ -404,7 +445,7 @@ export default function MarketPage() {
                     <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900">Carrots</p>
-                      <p className="text-sm text-gray-600">$20/kg • 30kg available</p>
+                      <p className="text-sm text-gray-600">₹20/kg • 30kg available</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-green-600">3 offers</p>

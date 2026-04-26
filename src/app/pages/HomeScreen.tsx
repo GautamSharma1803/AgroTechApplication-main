@@ -19,12 +19,15 @@ import {
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useAuth } from '../contexts/AuthContext';
 import { weather as weatherApi, crops as cropsApi } from '../utils/api';
+import { getUserLocation, getLocationName, saveLocation, getSavedLocation } from '../utils/location';
+import { toast } from 'sonner';
 
 export default function HomeScreen() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [weather, setWeather] = useState<any>(null);
   const [recentCrops, setRecentCrops] = useState<any[]>([]);
+  const [userLocation, setUserLocation] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -32,8 +35,31 @@ export default function HomeScreen() {
 
   async function loadData() {
     try {
-      // Load weather
-      const weatherData = await weatherApi.get();
+      // Get user location
+      let location = getSavedLocation();
+
+      if (!location) {
+        const coords = await getUserLocation();
+        if (coords) {
+          const locationName = await getLocationName(coords.latitude, coords.longitude);
+          location = {
+            ...coords,
+            city: locationName?.city,
+            country: locationName?.country
+          };
+          saveLocation(location);
+          setUserLocation(location);
+          toast.success(`Location detected: ${location.city}, ${location.country}`);
+        }
+      } else {
+        setUserLocation(location);
+      }
+
+      // Load weather with user's location
+      const weatherData = await weatherApi.get(
+        location?.latitude.toString(),
+        location?.longitude.toString()
+      );
       setWeather(weatherData);
 
       // Load recent crops
@@ -90,11 +116,14 @@ export default function HomeScreen() {
             <p className="text-green-100 text-sm">{user?.user_metadata?.fullName || user?.email}</p>
           </div>
           <div className="flex gap-3">
-            <button className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <button
+              onClick={() => navigate('/notifications')}
+              className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+            >
               <Bell className="text-white" size={20} />
             </button>
-            <button 
-              onClick={signOut}
+            <button
+              onClick={() => navigate('/profile')}
               className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
             >
               <User className="text-white" size={20} />
@@ -124,6 +153,11 @@ export default function HomeScreen() {
               </div>
               <p className="text-4xl font-bold">{weather?.temp || 28}°C</p>
               <p className="text-blue-100 mt-1">{weather?.description || 'Loading...'}</p>
+              {userLocation && (
+                <p className="text-xs text-blue-100 mt-1">
+                  📍 {userLocation.city}, {userLocation.country}
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-sm text-blue-100">Humidity</p>
@@ -233,7 +267,10 @@ export default function HomeScreen() {
             <ShoppingCart size={24} />
             <span className="text-xs">Market</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400">
+          <button
+            onClick={() => navigate('/profile')}
+            className="flex flex-col items-center gap-1 text-gray-400"
+          >
             <User size={24} />
             <span className="text-xs">Profile</span>
           </button>

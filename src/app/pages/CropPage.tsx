@@ -26,6 +26,31 @@ export default function CropPage() {
   const [detecting, setDetecting] = useState(false);
   const [cropImagePreview, setCropImagePreview] = useState<string | null>(null);
 
+  // Demo crop images mapping
+  const getCropDemoImage = (cropName: string): string => {
+    const cropImageMap: Record<string, string> = {
+      'tomato': 'https://images.unsplash.com/photo-1748432171507-c1d62fe2e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBwbGFudCUyMGdyb3dpbmd8ZW58MXx8fHwxNzc0ODQ5OTE1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      'wheat': 'https://images.unsplash.com/photo-1627842822558-c1f15aef9838?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aGVhdCUyMGZpZWxkJTIwZ29sZGVuJTIwaGFydmVzdHxlbnwxfHx8fDE3NzQ5NDMyMTV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      'corn': 'https://images.unsplash.com/photo-1769258958976-8852440011b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZ3JpY3VsdHVyYWwlMjBjcm9wcyUyMHZlZ2V0YWJsZXN8ZW58MXx8fHwxNzc0OTQzMjE0fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      'rice': 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      'potato': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      'carrot': 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      'lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      'cucumber': 'https://images.unsplash.com/photo-1604977042946-1eecc30f269e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      'pepper': 'https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      'onion': 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      'default': 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'
+    };
+
+    const cropNameLower = cropName.toLowerCase();
+    for (const [key, image] of Object.entries(cropImageMap)) {
+      if (cropNameLower.includes(key)) {
+        return image;
+      }
+    }
+    return cropImageMap.default;
+  };
+
   const mockCrops = [
     {
       id: 1,
@@ -88,7 +113,13 @@ export default function CropPage() {
     }
 
     try {
-      const crop = await cropsApi.create(newCrop);
+      // If no image provided, use demo image based on crop name
+      const finalCrop = {
+        ...newCrop,
+        image: cropImagePreview || newCrop.image || getCropDemoImage(newCrop.name)
+      };
+
+      const crop = await cropsApi.create(finalCrop);
       setCrops([...crops, crop]);
       toast.success('Crop added successfully!');
       resetCropForm();
@@ -98,7 +129,7 @@ export default function CropPage() {
       const demoCrop = {
         id: Date.now(),
         ...newCrop,
-        image: cropImagePreview || newCrop.image || 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400'
+        image: cropImagePreview || newCrop.image || getCropDemoImage(newCrop.name)
       };
       setCrops([...crops, demoCrop]);
       toast.info('Added as demo crop (not saved to database)');
