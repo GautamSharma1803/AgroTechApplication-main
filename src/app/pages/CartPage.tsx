@@ -19,11 +19,8 @@ export default function CartPage() {
       toast.error('Your cart is empty');
       return;
     }
-    toast.success('Order placed successfully! Thank you for your purchase.');
-    clearCart();
-    setTimeout(() => {
-      navigate('/home');
-    }, 2000);
+    // Navigate to checkout page
+    navigate('/checkout');
   };
 
   return (

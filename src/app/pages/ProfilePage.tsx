@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   ArrowLeft,
   User,
@@ -16,18 +18,23 @@ import {
   Bell,
   HelpCircle,
   X,
-  Save
+  Save,
+  Package,
+  ShoppingBag
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { user, signOut, isAdmin } = useAuth();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
   const [editData, setEditData] = useState({
     fullName: user?.user_metadata?.fullName || '',
     phone: user?.user_metadata?.phone || '',
@@ -39,6 +46,12 @@ export default function ProfilePage() {
     marketUpdates: true,
     diseaseAlerts: true
   });
+
+  useEffect(() => {
+    // Load orders from localStorage
+    const savedOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
+    setOrders(savedOrders.filter((order: any) => order.userId === user?.id));
+  }, [user?.id]);
 
   const handleLogout = () => {
     signOut();
@@ -99,6 +112,25 @@ export default function ProfilePage() {
     }
   ];
 
+  const getStatusColor = (status: string) => {
+    const colors: any = {
+      pending: 'bg-yellow-100 text-yellow-700',
+      processing: 'bg-blue-100 text-blue-700',
+      completed: 'bg-green-100 text-green-700',
+      cancelled: 'bg-red-100 text-red-700'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700';
+  };
+
+  const formatDate = (date: Date | string) => {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-IN', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto pb-20">
       {/* Header */}
@@ -112,9 +144,9 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="px-6 -mt-12">
+      <div className="px-6 -mt-12 space-y-6">
         {/* Profile Card */}
-        <Card className="rounded-2xl p-6 shadow-lg mb-6">
+        <Card className="rounded-2xl p-6 shadow-lg">
           <div className="flex flex-col items-center text-center">
             <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <User className="text-green-600" size={48} />
@@ -147,44 +179,129 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* Profile Sections */}
-        <div className="space-y-3 mb-6">
-          {profileSections.map((section, index) => {
-            const Icon = section.icon;
-            return (
-              <Card
-                key={index}
-                onClick={section.action}
-                className="rounded-xl p-4 cursor-pointer hover:shadow-md transition-shadow"
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="orders">My Orders</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile">
+            {/* Profile Sections */}
+            <div className="space-y-3 mb-6">
+              {profileSections.map((section, index) => {
+                const Icon = section.icon;
+                return (
+                  <Card
+                    key={index}
+                    onClick={section.action}
+                    className="rounded-xl p-4 cursor-pointer hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                        <Icon className="text-gray-600" size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900">{section.title}</h3>
+                        <p className="text-sm text-gray-600">{section.description}</p>
+                      </div>
+                      <ArrowLeft className="text-gray-400 rotate-180" size={20} />
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Admin Dashboard Button */}
+            {isAdmin && (
+              <Button
+                onClick={() => navigate('/admin')}
+                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center justify-center gap-2 mb-4"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                    <Icon className="text-gray-600" size={20} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{section.title}</h3>
-                    <p className="text-sm text-gray-600">{section.description}</p>
-                  </div>
-                  <ArrowLeft className="text-gray-400 rotate-180" size={20} />
-                </div>
+                <Shield size={20} />
+                Admin Dashboard
+              </Button>
+            )}
+
+            {/* Logout Button */}
+            <Button
+              onClick={handleLogout}
+              className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-xl flex items-center justify-center gap-2"
+            >
+              <LogOut size={20} />
+              Logout
+            </Button>
+
+            {/* App Version */}
+            <p className="text-center text-sm text-gray-500 mt-6">
+              AgroTech v1.0.0
+            </p>
+          </TabsContent>
+
+          <TabsContent value="orders">
+            {orders.length === 0 ? (
+              <Card className="rounded-2xl p-12 text-center">
+                <ShoppingBag className="mx-auto text-gray-300 mb-4" size={64} />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  No Orders Yet
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  You haven't placed any orders yet. Start shopping to see your orders here!
+                </p>
+                <Button
+                  onClick={() => navigate('/market')}
+                  className="bg-green-600 hover:bg-green-700 text-white rounded-xl"
+                >
+                  Browse Market
+                </Button>
               </Card>
-            );
-          })}
-        </div>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <Card key={order.orderId} className="rounded-2xl p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="font-bold text-gray-900">{order.orderId}</p>
+                        <p className="text-sm text-gray-600">{formatDate(order.createdAt)}</p>
+                      </div>
+                      <Badge className={getStatusColor(order.status)}>
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </Badge>
+                    </div>
 
-        {/* Logout Button */}
-        <Button
-          onClick={handleLogout}
-          className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-xl flex items-center justify-center gap-2"
-        >
-          <LogOut size={20} />
-          Logout
-        </Button>
+                    <div className="space-y-2 mb-4">
+                      {order.items.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between text-sm">
+                          <span className="text-gray-700">{item.name} × {item.quantity}</span>
+                          <span className="font-semibold text-gray-900">₹{item.price * item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
 
-        {/* App Version */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          AgriApp v1.0.0
-        </p>
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-900">Total</span>
+                        <span className="text-lg font-bold text-green-600">₹{order.total}</span>
+                      </div>
+                    </div>
+
+                    {order.shippingAddress && (
+                      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Shipping Address</p>
+                        <p className="text-sm text-gray-900">{order.shippingAddress.name}</p>
+                        <p className="text-sm text-gray-700">{order.shippingAddress.address}</p>
+                        <p className="text-sm text-gray-700">
+                          {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
+                        </p>
+                        <p className="text-sm text-gray-700">{order.shippingAddress.phone}</p>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Edit Profile Modal */}

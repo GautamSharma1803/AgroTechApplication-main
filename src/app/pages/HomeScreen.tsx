@@ -35,30 +35,43 @@ export default function HomeScreen() {
 
   async function loadData() {
     try {
-      // Get user location
-      let location = getSavedLocation();
-
-      if (!location) {
-        const coords = await getUserLocation();
-        if (coords) {
-          const locationName = await getLocationName(coords.latitude, coords.longitude);
-          location = {
-            ...coords,
-            city: locationName?.city,
-            country: locationName?.country
-          };
-          saveLocation(location);
-          setUserLocation(location);
-          toast.success(`Location detected: ${location.city}, ${location.country}`);
-        }
-      } else {
+      // Get user location - clear any existing saved location to get fresh location
+      localStorage.removeItem('user_location'); // Force fresh location request
+      const coords = await getUserLocation();
+      let location = null;
+      
+      if (coords) {
+        const locationName = await getLocationName(coords.latitude, coords.longitude);
+        location = {
+          ...coords,
+          city: locationName?.city || 'Your City',
+          country: locationName?.country || 'India'
+        };
+        saveLocation(location);
         setUserLocation(location);
+        toast.success(`Location detected: ${location.city}, ${location.country}`);
+      } else {
+        // Fallback to saved location if geolocation fails
+        location = getSavedLocation();
+        if (location) {
+          setUserLocation(location);
+        } else {
+          // Ultimate fallback coordinates (can be customized)
+          location = {
+            latitude: 28.6139,  // Default coordinates
+            longitude: 77.2090,
+            city: 'New Delhi',
+            country: 'India'
+          };
+          setUserLocation(location);
+          toast.info('Using default location. Please enable location access for accurate data.');
+        }
       }
 
       // Load weather with user's location
       const weatherData = await weatherApi.get(
-        location?.latitude.toString(),
-        location?.longitude.toString()
+        location.latitude.toString(),
+        location.longitude.toString()
       );
       setWeather(weatherData);
 
@@ -67,6 +80,7 @@ export default function HomeScreen() {
       setRecentCrops(cropsData.slice(0, 2));
     } catch (error) {
       console.error('Failed to load data:', error);
+      toast.error('Some features may not work properly. Please refresh.');
     }
   }
 

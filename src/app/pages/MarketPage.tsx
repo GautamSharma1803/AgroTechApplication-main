@@ -9,10 +9,12 @@ import { market } from '../utils/api';
 import { toast } from 'sonner';
 import { getUserLocation, getLocationName, saveLocation, getSavedLocation } from '../utils/location';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function MarketPage() {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<any[]>([]);
@@ -178,10 +180,17 @@ export default function MarketPage() {
     ];
   };
 
-  const displayProducts = products.length > 0 ? products : getMockProducts();
+  const displayProducts = searchQuery 
+    ? (products.length > 0 ? products : getMockProducts()).filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.seller.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : (products.length > 0 ? products : getMockProducts());
 
   const handleSearch = () => {
-    loadMarketData();
+    if (activeTab === 'buy') {
+      loadMarketData();
+    }
   };
 
   const handleBuyProduct = (product: any) => {
@@ -213,9 +222,42 @@ export default function MarketPage() {
     }
   };
 
-  const handleListingSubmit = () => {
-    // Add new listing logic here
-    // For now, just close the modal
+  const handleListingSubmit = async () => {
+    if (!newListing.name || !newListing.price || !newListing.quantity) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    const listing = {
+      id: Date.now(),
+      ...newListing,
+      price: parseFloat(newListing.price),
+      quantity: parseFloat(newListing.quantity),
+      image: listingImage || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400',
+      createdAt: new Date(),
+      seller: user?.user_metadata?.fullName || user?.email || 'Anonymous',
+      rating: 5.0,
+      stock: 'In Stock'
+    };
+
+    // Save to localStorage (in production, this would go to Supabase)
+    const existingListings = JSON.parse(localStorage.getItem('user_listings') || '[]');
+    existingListings.push(listing);
+    localStorage.setItem('user_listings', JSON.stringify(existingListings));
+
+    // Add to myListings state
+    setMyListings([...myListings, listing]);
+
+    // Reset form
+    setNewListing({
+      name: '',
+      price: '',
+      unit: 'kg',
+      quantity: '',
+      location: '',
+      description: ''
+    });
+    setListingImage(null);
     setShowListingModal(false);
     toast.success('Listing created successfully!');
   };

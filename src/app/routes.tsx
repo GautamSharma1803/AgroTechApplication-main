@@ -14,6 +14,8 @@ import SystemStatusPage from "./pages/SystemStatusPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 export const router = createBrowserRouter([
   {
@@ -75,5 +77,13 @@ export const router = createBrowserRouter([
   {
     path: "/cart",
     Component: CartPage,
+  },
+  {
+    path: "/checkout",
+    Component: CheckoutPage,
+  },
+  {
+    path: "/admin",
+    Component: AdminDashboard,
   },
 ]);
