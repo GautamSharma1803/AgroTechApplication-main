@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
+import { admin as adminApi } from '../utils/api';
 
 interface UserActivity {
   id: string;
@@ -78,7 +79,40 @@ export default function AdminDashboard() {
   }, [isAdmin, navigate]);
 
   async function loadAdminData() {
-    // Simulated data - in production, this would come from Supabase
+    try {
+      // Fetch real data from backend
+      const [fetchedUsers, fetchedOrders, fetchedActivities] = await Promise.all([
+        adminApi.getUsers(),
+        adminApi.getOrders(),
+        adminApi.getUserActivities()
+      ]);
+
+      setUsers(fetchedUsers || []);
+      setOrders(fetchedOrders || []);
+      setUserActivities(fetchedActivities || []);
+
+      // Calculate stats from real data
+      setStats({
+        totalUsers: fetchedUsers?.length || 0,
+        activeUsers: fetchedUsers?.filter((u: UserInfo) => u.status === 'active').length || 0,
+        totalOrders: fetchedOrders?.length || 0,
+        totalRevenue: fetchedOrders?.reduce((sum: number, o: Order) => sum + o.total, 0) || 0,
+        pendingOrders: fetchedOrders?.filter((o: Order) => o.status === 'pending').length || 0,
+        completedOrders: fetchedOrders?.filter((o: Order) => o.status === 'completed').length || 0
+      });
+
+      toast.success('Admin dashboard loaded with real data');
+    } catch (error: any) {
+      console.error('Failed to load admin data:', error);
+      toast.error('Backend not connected. Deploy Edge Functions to see real data.');
+
+      // Fallback to mock data only if backend fails
+      loadMockData();
+    }
+  }
+
+  function loadMockData() {
+    // Mock data as fallback
     const mockActivities: UserActivity[] = [
       {
         id: '1',
@@ -213,25 +247,55 @@ export default function AdminDashboard() {
     });
   }
 
-  const handleSuspendUser = (userId: string) => {
-    setUsers(prev => prev.map(user => 
-      user.id === userId ? { ...user, status: 'suspended' as const } : user
-    ));
-    toast.success('User suspended successfully');
+  const handleSuspendUser = async (userId: string) => {
+    try {
+      await adminApi.suspendUser(userId);
+      setUsers(prev => prev.map(user =>
+        user.id === userId ? { ...user, status: 'suspended' as const } : user
+      ));
+      toast.success('User suspended successfully');
+    } catch (error: any) {
+      console.error('Failed to suspend user:', error);
+      // Update locally even if backend fails
+      setUsers(prev => prev.map(user =>
+        user.id === userId ? { ...user, status: 'suspended' as const } : user
+      ));
+      toast.info('User suspended locally (backend not connected)');
+    }
   };
 
-  const handleActivateUser = (userId: string) => {
-    setUsers(prev => prev.map(user => 
-      user.id === userId ? { ...user, status: 'active' as const } : user
-    ));
-    toast.success('User activated successfully');
+  const handleActivateUser = async (userId: string) => {
+    try {
+      await adminApi.activateUser(userId);
+      setUsers(prev => prev.map(user =>
+        user.id === userId ? { ...user, status: 'active' as const } : user
+      ));
+      toast.success('User activated successfully');
+    } catch (error: any) {
+      console.error('Failed to activate user:', error);
+      // Update locally even if backend fails
+      setUsers(prev => prev.map(user =>
+        user.id === userId ? { ...user, status: 'active' as const } : user
+      ));
+      toast.info('User activated locally (backend not connected)');
+    }
   };
 
-  const handleUpdateOrderStatus = (orderId: string, newStatus: Order['status']) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
-    toast.success(`Order ${orderId} updated to ${newStatus}`);
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
+    try {
+      await adminApi.updateOrderStatus(orderId, newStatus);
+      setOrders(prev => prev.map(order =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+      toast.success(`Order ${orderId} updated to ${newStatus}`);
+    } catch (error: any) {
+      console.error('Failed to update order:', error);
+      // Update locally even if backend fails
+      setOrders(prev => prev.map(order =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+      toast.info(`Order updated locally (backend not connected)`);
+    }
   };
 
   const getActivityIcon = (type: UserActivity['type']) => {

@@ -121,13 +121,6 @@ export default function LoginPage() {
                 Sign Up
               </button>
             </div>
-
-            {/* Admin Info */}
-            <div className="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
-              <p className="text-xs text-purple-900 font-semibold mb-1">🔐 Admin Access</p>
-              <p className="text-xs text-purple-700">Email: admin@agrotech.com</p>
-              <p className="text-xs text-purple-700">Password: admin123</p>
-            </div>
           </form>
         </div>
       </div>

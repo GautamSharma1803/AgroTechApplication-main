@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Search, Filter, TrendingUp, TrendingDown, Star, MapPin, Camera, X } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Search, Filter, TrendingUp, TrendingDown, Star, MapPin, Camera, X, Package } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -71,6 +71,14 @@ export default function MarketPage() {
 
   useEffect(() => {
     loadMarketData();
+  }, [activeTab]);
+
+  useEffect(() => {
+    // Load user's listings from localStorage
+    if (activeTab === 'sell') {
+      const savedListings = JSON.parse(localStorage.getItem('user_listings') || '[]');
+      setMyListings(savedListings);
+    }
   }, [activeTab]);
 
   async function loadUserLocation() {
@@ -468,33 +476,47 @@ export default function MarketPage() {
 
             <div>
               <h3 className="font-semibold text-gray-900 mb-4">Your Active Listings</h3>
-              <div className="space-y-3">
-                <Card className="rounded-xl p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Fresh Lettuce</p>
-                      <p className="text-sm text-gray-600">₹25/kg • 50kg available</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-green-600">5 offers</p>
-                    </div>
+              {myListings.length > 0 ? (
+                <div className="space-y-3">
+                  {myListings.map((listing: any) => (
+                    <Card key={listing.id} className="rounded-xl p-4">
+                      <div className="flex items-center gap-4">
+                        <ImageWithFallback
+                          src={listing.image}
+                          alt={listing.name}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900">{listing.name}</p>
+                          <p className="text-sm text-gray-600">
+                            ₹{listing.price}/{listing.unit} • {listing.quantity}{listing.unit} available
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-green-600">{listing.stock}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="rounded-xl p-8 text-center border-2 border-dashed border-gray-200">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package className="text-gray-400" size={32} />
                   </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">No Active Listings</h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    You haven't created any listings yet. Start selling your products now!
+                  </p>
+                  <Button
+                    onClick={handleCreateListing}
+                    size="sm"
+                    className="bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
+                  >
+                    Create Your First Listing
+                  </Button>
                 </Card>
-
-                <Card className="rounded-xl p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Carrots</p>
-                      <p className="text-sm text-gray-600">₹20/kg • 30kg available</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-green-600">3 offers</p>
-                    </div>
-                  </div>
-                </Card>
-              </div>
+              )}
             </div>
           </div>
         )}

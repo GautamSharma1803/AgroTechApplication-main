@@ -7,13 +7,13 @@ import { Chatbot } from './components/Chatbot';
 import { useAuth } from './contexts/AuthContext';
 
 function AppContent() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   return (
     <>
       <RouterProvider router={router} />
       <Toaster />
-      {user && <Chatbot />}
+      {user && !isAdmin && <Chatbot />}
     </>
   );
 }

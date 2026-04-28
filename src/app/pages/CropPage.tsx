@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
-import { ArrowLeft, Plus, Calendar, Droplets, TrendingUp, AlertCircle, X, Upload, Camera, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, Droplets, TrendingUp, AlertCircle, X, Upload, Camera, Loader2, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { crops as cropsApi, cropDetection } from '../utils/api';
 import { toast } from 'sonner';
@@ -25,6 +25,8 @@ export default function CropPage() {
   });
   const [detecting, setDetecting] = useState(false);
   const [cropImagePreview, setCropImagePreview] = useState<string | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedCrop, setSelectedCrop] = useState<any | null>(null);
 
   // Demo crop images mapping
   const getCropDemoImage = (cropName: string): string => {
@@ -196,6 +198,23 @@ export default function CropPage() {
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  async function handleRemoveCrop(cropId: number) {
+    try {
+      await cropsApi.delete(cropId.toString());
+      setCrops(crops.filter(c => c.id !== cropId));
+      toast.success('Crop removed successfully!');
+      setShowDetailsModal(false);
+      setSelectedCrop(null);
+    } catch (error: any) {
+      console.error('Failed to remove crop:', error);
+      // Remove from local state even if backend fails
+      setCrops(crops.filter(c => c.id !== cropId));
+      toast.info('Crop removed locally (backend not connected)');
+      setShowDetailsModal(false);
+      setSelectedCrop(null);
+    }
   }
 
   async function mockCropDetection(imageData: string) {
@@ -394,7 +413,10 @@ export default function CropPage() {
                   )}
 
                   <Button
-                    onClick={() => navigate('/diagnose')}
+                    onClick={() => {
+                      setSelectedCrop(crop);
+                      setShowDetailsModal(true);
+                    }}
                     variant="outline"
                     className="w-full mt-4 h-10 border-emerald-600 text-emerald-600 hover:bg-emerald-50 rounded-lg"
                   >
@@ -564,6 +586,115 @@ export default function CropPage() {
             >
               {detecting ? 'AI Detecting...' : 'Add Crop'}
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Crop Details Modal */}
+      {showDetailsModal && selectedCrop && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            {/* Crop Image */}
+            <div className="relative h-48">
+              <ImageWithFallback
+                src={selectedCrop.image}
+                alt={selectedCrop.name}
+                className="w-full h-full object-cover rounded-t-2xl"
+              />
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedCrop(null);
+                }}
+                className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100"
+              >
+                <X size={20} className="text-gray-600" />
+              </button>
+              <div
+                className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold ${
+                  selectedCrop.health === 'excellent'
+                    ? 'bg-green-500 text-white'
+                    : selectedCrop.health === 'good'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-orange-500 text-white'
+                }`}
+              >
+                {selectedCrop.health === 'excellent'
+                  ? 'Excellent Health'
+                  : selectedCrop.health === 'good'
+                  ? 'Good Health'
+                  : 'Needs Attention'}
+              </div>
+            </div>
+
+            {/* Crop Details */}
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {selectedCrop.name}
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">{selectedCrop.variety}</p>
+
+              {/* Details Grid */}
+              <div className="space-y-4 mb-6">
+                <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
+                  <Calendar className="text-emerald-600 flex-shrink-0 mt-1" size={20} />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">Planted</p>
+                    <p className="text-base text-gray-900">{selectedCrop.planted}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
+                  <TrendingUp className="text-emerald-600 flex-shrink-0 mt-1" size={20} />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">Harvest In</p>
+                    <p className="text-base text-gray-900">{selectedCrop.harvest}</p>
+                  </div>
+                </div>
+
+                {selectedCrop.tasks && selectedCrop.tasks.length > 0 && (
+                  <div className="p-4 bg-gray-50 rounded-xl">
+                    <p className="text-sm font-semibold text-gray-700 mb-3">Today's Tasks</p>
+                    <div className="space-y-2">
+                      {selectedCrop.tasks.map((task: string, idx: number) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          {selectedCrop.health === 'warning' && idx === 0 ? (
+                            <AlertCircle className="text-orange-600 flex-shrink-0 mt-0.5" size={16} />
+                          ) : (
+                            <Droplets className="text-blue-600 flex-shrink-0 mt-0.5" size={16} />
+                          )}
+                          <span className="text-sm text-gray-700">{task}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    navigate('/diagnose');
+                  }}
+                  className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                >
+                  Diagnose Health
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (confirm(`Are you sure you want to remove ${selectedCrop.name}?`)) {
+                      handleRemoveCrop(selectedCrop.id);
+                    }
+                  }}
+                  variant="outline"
+                  className="h-11 px-4 border-red-300 text-red-600 hover:bg-red-50 rounded-lg"
+                >
+                  <Trash2 size={20} />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

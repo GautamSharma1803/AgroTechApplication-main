@@ -221,3 +221,44 @@ export const upload = {
     return data.url;
   },
 };
+
+// ============= ADMIN API =============
+
+export const admin = {
+  getUsers: async () => {
+    const data = await apiCall('/admin/users');
+    return data.users;
+  },
+
+  getOrders: async () => {
+    const data = await apiCall('/admin/orders');
+    return data.orders;
+  },
+
+  getUserActivities: async () => {
+    const data = await apiCall('/admin/activities');
+    return data.activities;
+  },
+
+  suspendUser: async (userId: string) => {
+    const data = await apiCall(`/admin/users/${userId}/suspend`, {
+      method: 'POST',
+    });
+    return data;
+  },
+
+  activateUser: async (userId: string) => {
+    const data = await apiCall(`/admin/users/${userId}/activate`, {
+      method: 'POST',
+    });
+    return data;
+  },
+
+  updateOrderStatus: async (orderId: string, status: string) => {
+    const data = await apiCall(`/admin/orders/${orderId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+    return data;
+  },
+};
