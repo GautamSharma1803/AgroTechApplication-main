@@ -23,9 +23,14 @@ export function getAuthToken(): string | null {
 
 async function apiCall(endpoint: string, options: RequestInit = {}) {
   const token = getAuthToken();
+  const adminToken = localStorage.getItem('admin_token');
+
+  // Use admin token if available, otherwise use auth token or public anon key
+  const authToken = adminToken || token || publicAnonKey;
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token || publicAnonKey}`,
+    'Authorization': `Bearer ${authToken}`,
     ...options.headers,
   };
 

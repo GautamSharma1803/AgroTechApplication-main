@@ -39,6 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function checkSession() {
     try {
+      // Check for admin session first
+      const adminSession = localStorage.getItem('admin_session');
+      if (adminSession) {
+        const adminUser = JSON.parse(adminSession);
+        setUser(adminUser);
+        setLoading(false);
+        return;
+      }
+
+      // Check regular user session
       const token = getAuthToken();
       if (token) {
         const data = await auth.getSession();
@@ -65,10 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       };
       setUser(adminUser);
+      // Store admin session in localStorage for persistence
+      localStorage.setItem('admin_session', JSON.stringify(adminUser));
       localStorage.setItem('admin_token', 'admin-authenticated');
       return;
     }
-    
+
     // Regular user login
     const data = await auth.signIn(email, password);
     setUser({
@@ -86,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = () => {
     auth.signOut();
     localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_session');
     setUser(null);
   };
 

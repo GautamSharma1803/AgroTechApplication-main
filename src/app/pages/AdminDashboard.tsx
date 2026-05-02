@@ -101,10 +101,21 @@ export default function AdminDashboard() {
         completedOrders: fetchedOrders?.filter((o: Order) => o.status === 'completed').length || 0
       });
 
-      toast.success('Admin dashboard loaded with real data');
+      // Only show success if we actually have data
+      if (fetchedUsers?.length > 0 || fetchedOrders?.length > 0 || fetchedActivities?.length > 0) {
+        toast.success('Admin dashboard loaded successfully');
+      } else {
+        toast.info('Dashboard loaded. No user activity yet.');
+      }
     } catch (error: any) {
       console.error('Failed to load admin data:', error);
-      toast.error('Backend not connected. Deploy Edge Functions to see real data.');
+
+      // Check if it's a network error or backend not deployed
+      if (error.message?.includes('fetch') || error.message?.includes('Network')) {
+        toast.error('Cannot connect to backend. Please check if Edge Functions are deployed.');
+      } else {
+        toast.warning('Using demo data. Deploy backend for real-time information.');
+      }
 
       // Fallback to mock data only if backend fails
       loadMockData();
