@@ -32,31 +32,30 @@ export default function DiagnosePage() {
     setAnalyzing(true);
     try {
       // STEP 1: Validate if the image contains a plant
-      toast.info('Validating image...');
+      toast.info('🔍 Validating image...');
       const validation = await diagnosisApi.validatePlant(imageToAnalyze);
-      
-      // Mock validation logic for demo (will use real AI when backend is connected)
-      // This simulates detecting if image is a plant
-      const isValidPlant = await mockPlantValidation(imageToAnalyze);
-      
-      if (!isValidPlant) {
-        toast.error('❌ This doesn\'t appear to be a plant image!', {
-          description: 'Please upload a clear photo of a plant, leaf, stem, or crop for disease detection.',
-          duration: 5000,
-        });
-        setAnalyzing(false);
-        return;
+
+      if (validation && typeof validation === 'object' && 'isPlant' in validation) {
+        if (!validation.isPlant || validation.confidence < 50) {
+          toast.error('❌ Not a plant detected!', {
+            description: 'Please upload a clear photo of a plant, leaf, stem, or crop for disease detection.',
+            duration: 5000,
+          });
+          setSelectedImage(null);
+          setAnalyzing(false);
+          return;
+        }
       }
 
       // STEP 2: Upload image
-      toast.info('Uploading image...');
+      toast.info('📤 Uploading image...');
       const imageUrl = await uploadApi.image(imageToAnalyze, 'diagnosis');
 
       // STEP 3: Analyze the image with AI
-      toast.info('AI is analyzing your plant...');
+      toast.info('🤖 AI is analyzing your plant...');
       const result = await diagnosisApi.analyze(imageToAnalyze);
 
-      toast.success('Analysis complete!');
+      toast.success('✅ Analysis complete!');
       // Navigate to report with the diagnosis data
       navigate('/diagnose/report', { state: { diagnosis: result } });
     } catch (error: any) {
@@ -94,27 +93,6 @@ export default function DiagnosePage() {
     } finally {
       setAnalyzing(false);
     }
-  };
-
-  // Mock plant validation function (simulates AI detection)
-  const mockPlantValidation = async (imageData: string): Promise<boolean> => {
-    // This is a simulation. In production, this would call real AI API
-    // For demo purposes, we'll do a simple check based on image characteristics
-    
-    // You can enhance this with actual image analysis libraries or AI APIs
-    // For now, we'll simulate a validation that passes most of the time
-    // but could reject based on certain patterns
-    
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // In a real implementation, this would use computer vision to detect:
-        // - Green colors (chlorophyll)
-        // - Plant-like textures
-        // - Leaf/stem structures
-        // For demo, we'll accept all images but you can add logic here
-        resolve(true);
-      }, 500);
-    });
   };
 
   return (

@@ -536,6 +536,314 @@ function generateSoilRecommendations(testData: any): any[] {
   return recommendations;
 }
 
+// ============= ADMIN ROUTES =============
+
+// Admin middleware - check if user is admin
+async function verifyAdmin(authHeader: string | null) {
+  const user = await verifyAuth(authHeader);
+  if (!user) return null;
+
+  // Check if admin (hardcoded admin email or role metadata)
+  const isAdmin = user.email === 'admin@agrotech.com' || user.user_metadata?.role === 'admin';
+  if (!isAdmin) return null;
+
+  return user;
+}
+
+app.get("/make-server-2598bc7a/admin/users", async (c) => {
+  try {
+    const admin = await verifyAdmin(c.req.header("Authorization"));
+    if (!admin) return c.json({ error: "Admin access required" }, 403);
+
+    // Fetch all users from Supabase Auth
+    const { data: { users }, error } = await supabase.auth.admin.listUsers();
+
+    if (error) {
+      console.error("Failed to fetch users:", error);
+      return c.json({ error: "Failed to fetch users" }, 500);
+    }
+
+    // Transform users to match frontend interface
+    const transformedUsers = await Promise.all(users.map(async (user: any) => {
+      // Get user's order history
+      const orders = await kv.getByPrefix(`order:${user.id}:`);
+      const totalOrders = orders?.length || 0;
+      const totalSpent = orders?.reduce((sum: number, order: any) => sum + (order.total || 0), 0) || 0;
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.fullName || user.email?.split('@')[0] || 'Unknown',
+        phone: user.user_metadata?.phone || '',
+        status: user.banned_until ? 'suspended' : 'active',
+        joinedDate: new Date(user.created_at),
+        totalOrders,
+        totalSpent: Math.round(totalSpent)
+      };
+    }));
+
+    return c.json({ users: transformedUsers });
+  } catch (error) {
+    console.error("Admin get users error:", error);
+    return c.json({ error: "Failed to fetch users" }, 500);
+  }
+});
+
+app.get("/make-server-2598bc7a/admin/orders", async (c) => {
+  try {
+    const admin = await verifyAdmin(c.req.header("Authorization"));
+    if (!admin) return c.json({ error: "Admin access required" }, 403);
+
+    // Fetch all orders from all users
+    const allOrders = await kv.getByPrefix("order:");
+
+    return c.json({ orders: allOrders || [] });
+  } catch (error) {
+    console.error("Admin get orders error:", error);
+    return c.json({ error: "Failed to fetch orders" }, 500);
+  }
+});
+
+app.get("/make-server-2598bc7a/admin/activities", async (c) => {
+  try {
+    const admin = await verifyAdmin(c.req.header("Authorization"));
+    if (!admin) return c.json({ error: "Admin access required" }, 403);
+
+    // Fetch recent user activities
+    const activities = await kv.getByPrefix("activity:");
+
+    // Sort by timestamp (most recent first)
+    const sorted = (activities || []).sort((a: any, b: any) =>
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    return c.json({ activities: sorted.slice(0, 50) }); // Return last 50 activities
+  } catch (error) {
+    console.error("Admin get activities error:", error);
+    return c.json({ error: "Failed to fetch activities" }, 500);
+  }
+});
+
+app.post("/make-server-2598bc7a/admin/users/:userId/suspend", async (c) => {
+  try {
+    const admin = await verifyAdmin(c.req.header("Authorization"));
+    if (!admin) return c.json({ error: "Admin access required" }, 403);
+
+    const userId = c.req.param("userId");
+
+    // Ban user for 100 years (effectively permanent until manually lifted)
+    const { error } = await supabase.auth.admin.updateUserById(userId, {
+      banned_until: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString()
+    });
+
+    if (error) {
+      console.error("Failed to suspend user:", error);
+      return c.json({ error: "Failed to suspend user" }, 500);
+    }
+
+    // Log activity
+    const activityId = crypto.randomUUID();
+    await kv.set(`activity:${activityId}`, {
+      id: activityId,
+      userId: admin.id,
+      userName: 'Admin',
+      email: admin.email,
+      activity: `Suspended user ${userId}`,
+      timestamp: new Date(),
+      type: 'admin'
+    });
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error("Suspend user error:", error);
+    return c.json({ error: "Failed to suspend user" }, 500);
+  }
+});
+
+app.post("/make-server-2598bc7a/admin/users/:userId/activate", async (c) => {
+  try {
+    const admin = await verifyAdmin(c.req.header("Authorization"));
+    if (!admin) return c.json({ error: "Admin access required" }, 403);
+
+    const userId = c.req.param("userId");
+
+    // Remove ban
+    const { error } = await supabase.auth.admin.updateUserById(userId, {
+      banned_until: 'none'
+    });
+
+    if (error) {
+      console.error("Failed to activate user:", error);
+      return c.json({ error: "Failed to activate user" }, 500);
+    }
+
+    // Log activity
+    const activityId = crypto.randomUUID();
+    await kv.set(`activity:${activityId}`, {
+      id: activityId,
+      userId: admin.id,
+      userName: 'Admin',
+      email: admin.email,
+      activity: `Activated user ${userId}`,
+      timestamp: new Date(),
+      type: 'admin'
+    });
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error("Activate user error:", error);
+    return c.json({ error: "Failed to activate user" }, 500);
+  }
+});
+
+app.put("/make-server-2598bc7a/admin/orders/:orderId", async (c) => {
+  try {
+    const admin = await verifyAdmin(c.req.header("Authorization"));
+    if (!admin) return c.json({ error: "Admin access required" }, 403);
+
+    const orderId = c.req.param("orderId");
+    const { status } = await c.req.json();
+
+    const order = await kv.get(`order:${orderId}`);
+    if (!order) {
+      return c.json({ error: "Order not found" }, 404);
+    }
+
+    const updatedOrder = {
+      ...order,
+      status,
+      updatedAt: new Date().toISOString()
+    };
+
+    await kv.set(`order:${orderId}`, updatedOrder);
+
+    // Log activity
+    const activityId = crypto.randomUUID();
+    await kv.set(`activity:${activityId}`, {
+      id: activityId,
+      userId: admin.id,
+      userName: 'Admin',
+      email: admin.email,
+      activity: `Updated order ${orderId} to ${status}`,
+      timestamp: new Date(),
+      type: 'admin'
+    });
+
+    return c.json({ order: updatedOrder });
+  } catch (error) {
+    console.error("Update order error:", error);
+    return c.json({ error: "Failed to update order" }, 500);
+  }
+});
+
+// ============= CROP DETECTION WITH VALIDATION =============
+
+app.post("/make-server-2598bc7a/crops/detect", async (c) => {
+  try {
+    const user = await verifyAuth(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { image } = await c.req.json();
+
+    const PLANT_ID_API_KEY = Deno.env.get("PLANT_ID_API_KEY");
+
+    if (!PLANT_ID_API_KEY) {
+      return c.json({ error: "Plant.id API key not configured" }, 500);
+    }
+
+    // Use Plant.id identification endpoint to detect crop type
+    const response = await fetch("https://api.plant.id/v2/identify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Api-Key": PLANT_ID_API_KEY,
+      },
+      body: JSON.stringify({
+        images: [image],
+        modifiers: ["crops_fast", "similar_images"],
+        plant_details: ["common_names", "edible_parts", "watering"],
+      }),
+    });
+
+    const result = await response.json();
+
+    // Check if it's actually a plant
+    const isPlant = result.is_plant?.binary || false;
+    const probability = result.is_plant?.probability || 0;
+
+    if (!isPlant || probability < 0.5) {
+      return c.json({
+        error: "Not a plant detected",
+        isPlant: false,
+        message: "Please upload a clear image of a crop or plant"
+      }, 400);
+    }
+
+    const topSuggestion = result.suggestions?.[0];
+
+    const cropInfo = {
+      cropType: topSuggestion?.plant_name || "Unknown Crop",
+      variety: topSuggestion?.plant_details?.common_names?.[0] || "",
+      confidence: Math.round((topSuggestion?.probability || 0) * 100),
+      plantedDaysAgo: 10,
+      harvestDays: 60,
+      health: "good",
+      tasks: [
+        "Water regularly",
+        "Check for pests",
+        "Monitor growth"
+      ],
+      isPlant: true
+    };
+
+    return c.json({ cropInfo });
+  } catch (error) {
+    console.error("Crop detection error:", error);
+    return c.json({ error: "Failed to detect crop" }, 500);
+  }
+});
+
+app.post("/make-server-2598bc7a/diagnose/validate", async (c) => {
+  try {
+    const user = await verifyAuth(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { image } = await c.req.json();
+
+    const PLANT_ID_API_KEY = Deno.env.get("PLANT_ID_API_KEY");
+
+    if (!PLANT_ID_API_KEY) {
+      return c.json({ isPlant: true, confidence: 0 }); // Allow through if API not configured
+    }
+
+    // Use Plant.id to check if image contains a plant
+    const response = await fetch("https://api.plant.id/v2/identify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Api-Key": PLANT_ID_API_KEY,
+      },
+      body: JSON.stringify({
+        images: [image],
+        modifiers: ["crops_fast"],
+      }),
+    });
+
+    const result = await response.json();
+
+    const isPlant = result.is_plant?.binary || false;
+    const probability = result.is_plant?.probability || 0;
+
+    return c.json({
+      isPlant,
+      confidence: Math.round(probability * 100)
+    });
+  } catch (error) {
+    console.error("Plant validation error:", error);
+    return c.json({ isPlant: true, confidence: 0 }); // Allow through on error
+  }
+});
+
 // Health check
 app.get("/make-server-2598bc7a/health", (c) => {
   return c.json({ status: "ok", timestamp: new Date().toISOString() });
