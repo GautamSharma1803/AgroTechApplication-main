@@ -68,6 +68,7 @@ export default function AdminDashboard() {
     pendingOrders: 0,
     completedOrders: 0
   });
+  const [isUsingMockData, setIsUsingMockData] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -102,22 +103,36 @@ export default function AdminDashboard() {
       });
 
       // Only show success if we actually have data
+      setIsUsingMockData(false);
       if (fetchedUsers?.length > 0 || fetchedOrders?.length > 0 || fetchedActivities?.length > 0) {
-        toast.success('Admin dashboard loaded successfully');
+        toast.success('✅ Admin dashboard connected to live database');
       } else {
-        toast.info('Dashboard loaded. No user activity yet.');
+        toast.info('Dashboard connected. No user activity yet.');
       }
     } catch (error: any) {
       console.error('Failed to load admin data:', error);
 
-      // Check if it's a network error or backend not deployed
-      if (error.message?.includes('fetch') || error.message?.includes('Network')) {
-        toast.error('Cannot connect to backend. Please check if Edge Functions are deployed.');
+      // Check error type and provide specific guidance
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        toast.error('❌ Authentication failed. Please log out and log back in as admin.', {
+          duration: 5000
+        });
+      } else if (error.message?.includes('403') || error.message?.includes('Admin access required')) {
+        toast.error('❌ Admin access denied. Please use admin credentials.', {
+          duration: 5000
+        });
+      } else if (error.message?.includes('fetch') || error.message?.includes('Network') || error.message?.includes('Failed to fetch')) {
+        toast.error('🚀 Backend not deployed! Check DEPLOYMENT_GUIDE.md to deploy Edge Functions.', {
+          duration: 7000
+        });
       } else {
-        toast.warning('Using demo data. Deploy backend for real-time information.');
+        toast.warning('⚠️ Using demo data. See DEPLOYMENT_GUIDE.md to connect real database.', {
+          duration: 5000
+        });
       }
 
       // Fallback to mock data only if backend fails
+      setIsUsingMockData(true);
       loadMockData();
     }
   }
@@ -350,6 +365,25 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 max-w-6xl mx-auto pb-20">
+      {/* Backend Warning Banner */}
+      {isUsingMockData && (
+        <div className="bg-orange-500 text-white px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle size={20} />
+            <div>
+              <p className="font-semibold text-sm">Demo Mode - Backend Not Connected</p>
+              <p className="text-xs opacity-90">Deploy Edge Functions to connect real database. Check DEPLOYMENT_GUIDE.md</p>
+            </div>
+          </div>
+          <button
+            onClick={() => window.open('/DEPLOYMENT_GUIDE.md', '_blank')}
+            className="bg-white text-orange-600 px-4 py-1 rounded-lg text-sm font-semibold hover:bg-orange-50"
+          >
+            View Guide
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-purple-600 p-6 rounded-b-[2rem]">
         <div className="flex items-center justify-between mb-4">
