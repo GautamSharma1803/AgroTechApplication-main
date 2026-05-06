@@ -58,8 +58,10 @@ Your backend Edge Functions need to be deployed to Supabase for the app to work 
 
 4. **Deploy the Function**
    ```bash
-   supabase functions deploy make-server-2598bc7a
+   supabase functions deploy make-server-2598bc7a --no-verify-jwt
    ```
+   
+   **Important:** The `--no-verify-jwt` flag allows public endpoints (like health checks) to work without authentication.
 
 ### After Deployment
 

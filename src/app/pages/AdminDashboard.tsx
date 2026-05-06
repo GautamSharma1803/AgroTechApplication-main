@@ -118,8 +118,8 @@ export default function AdminDashboard() {
           duration: 5000
         });
       } else if (error.message?.includes('403') || error.message?.includes('Admin access required')) {
-        toast.error('❌ Admin access denied. Please use admin credentials.', {
-          duration: 5000
+        toast.error('❌ Backend deployed but missing admin code! Check REDEPLOY_INSTRUCTIONS.md', {
+          duration: 8000
         });
       } else if (error.message?.includes('fetch') || error.message?.includes('Network') || error.message?.includes('Failed to fetch')) {
         toast.error('🚀 Backend not deployed! Check DEPLOYMENT_GUIDE.md to deploy Edge Functions.', {
@@ -350,9 +350,12 @@ export default function AdminDashboard() {
     );
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string | undefined | null) => {
+    if (!date) return 'Unknown';
     const now = Date.now();
-    const diff = now - date.getTime();
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return 'Invalid date';
+    const diff = now - dateObj.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -367,20 +370,64 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 max-w-6xl mx-auto pb-20">
       {/* Backend Warning Banner */}
       {isUsingMockData && (
-        <div className="bg-orange-500 text-white px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <AlertCircle size={20} />
+        <div className="bg-red-600 text-white px-6 py-4">
+          <div className="flex items-center gap-3 mb-3">
+            <AlertCircle size={24} />
             <div>
-              <p className="font-semibold text-sm">Demo Mode - Backend Not Connected</p>
-              <p className="text-xs opacity-90">Deploy Edge Functions to connect real database. Check DEPLOYMENT_GUIDE.md</p>
+              <p className="font-bold text-base">⚠️ Backend Issue Detected</p>
+              <p className="text-sm opacity-95">Admin access denied - Backend missing admin authentication code</p>
             </div>
           </div>
-          <button
-            onClick={() => window.open('/DEPLOYMENT_GUIDE.md', '_blank')}
-            className="bg-white text-orange-600 px-4 py-1 rounded-lg text-sm font-semibold hover:bg-orange-50"
-          >
-            View Guide
-          </button>
+          <div className="bg-white/10 rounded-lg p-3 mb-3">
+            <p className="text-xs font-semibold mb-1">📋 Quick Fix Required:</p>
+            <ol className="text-xs space-y-1 opacity-90">
+              <li>1. Open file: <code className="bg-white/20 px-1 rounded">DEPLOY_THIS_FILE.tsx</code></li>
+              <li>2. Copy ALL the code</li>
+              <li>3. Go to Supabase Dashboard → Edge Functions</li>
+              <li>4. Edit your function and paste the new code</li>
+              <li>5. Click Deploy and refresh this page</li>
+            </ol>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const adminToken = localStorage.getItem('admin_token');
+                fetch('https://cyzfefgxdxjelhjytkfz.supabase.co/functions/v1/make-server-2598bc7a/admin/users', {
+                  headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Content-Type': 'application/json'
+                  }
+                })
+                  .then(r => r.json())
+                  .then(data => {
+                    if (data.users !== undefined) {
+                      toast.success('✅ Backend fixed! Reloading...');
+                      setTimeout(() => window.location.reload(), 1500);
+                    } else if (data.error?.includes('Admin access required')) {
+                      toast.error('❌ Still broken. Follow REDEPLOY_INSTRUCTIONS.md step by step', {
+                        duration: 6000
+                      });
+                    } else {
+                      toast.warning('Unexpected response. Check console.');
+                      console.log('Response:', data);
+                    }
+                  })
+                  .catch(err => {
+                    toast.error('❌ Not deployed yet. See DEPLOYMENT_GUIDE.md');
+                    console.error('Error:', err);
+                  });
+              }}
+              className="bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-50"
+            >
+              🧪 Test Again
+            </button>
+            <button
+              onClick={() => window.open('/REDEPLOY_INSTRUCTIONS.md', '_blank')}
+              className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white/30"
+            >
+              📖 Step-by-Step Fix
+            </button>
+          </div>
         </div>
       )}
 

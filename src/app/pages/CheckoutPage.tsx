@@ -41,7 +41,7 @@ export default function CheckoutPage() {
   });
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = 50;
+  const deliveryFee = 30;
   const tax = Math.round(subtotal * 0.05); // 5% tax
   const total = subtotal + deliveryFee + tax;
 

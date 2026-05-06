@@ -11,7 +11,7 @@ export default function CartPage() {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = 50;
+  const deliveryFee = 30;
   const grandTotal = total + deliveryFee;
 
   const handleCheckout = () => {
